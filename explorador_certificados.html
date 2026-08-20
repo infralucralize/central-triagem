@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Investigar lista Certificados - SharePoint</title>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --border:#2a2f3a; --text:#e8eaed; --muted:#9aa3b2;
+    --accent:#5b8cff; --good:#4caf80; --bad:#e0645c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); padding:32px; max-width:900px; margin:0 auto;
+  }
+  h1{font-size:20px; margin-bottom:6px;}
+  .subtitle{color:var(--muted); font-size:13px; margin-bottom:24px; line-height:1.5;}
+  button{
+    background:var(--accent); color:#fff; border:none; padding:11px 20px;
+    border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; margin-right:10px; margin-bottom:10px;
+  }
+  button:hover{opacity:0.9;}
+  button:disabled{opacity:0.5; cursor:not-allowed;}
+  pre{
+    padding:16px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel); font-size:11.5px; white-space:pre-wrap; word-break:break-word;
+    max-height:600px; overflow:auto; display:none;
+  }
+  .bad{color:var(--bad);}
+  .good{color:var(--good);}
+  .note{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--muted); margin-top:20px; line-height:1.5;}
+</style>
+</head>
+<body>
+
+<h1>Investigar a lista "Certificados"</h1>
+<div class="subtitle">
+  Faz login com sua conta Microsoft e busca o primeiro item da lista "Certificados" nos dois sites
+  (Contabilidade e Tech), mostrando os nomes internos de todos os campos. Roda 100% no seu navegador.
+</div>
+
+<button id="loginBtn">1. Fazer login com Microsoft</button>
+<button id="runContabilBtn" disabled>2. Investigar Certificados — Contabilidade</button>
+<button id="runTechBtn" disabled>3. Investigar Certificados — Tech</button>
+
+<pre id="out"></pre>
+
+<div class="note">
+  <b>O que fazer com o resultado:</b> copia o texto que aparecer (os dois blocos, se rodar os dois botões)
+  e me manda de volta — preciso ver os nomes internos exatos dos campos (tipo <code>Title</code>,
+  <code>Situa_x00e7__x00e3_o</code>, <code>field_3</code> etc.) pra montar o mapeamento certo entre o
+  HTML da Central de Triagem e essas listas do SharePoint.
+</div>
+
+<script>
+const MSAL_CONFIG = {
+  auth: {
+    clientId: "0876f783-54bf-4149-8ce3-4d72d4b5af94",
+    authority: "https://login.microsoftonline.com/5173aa83-66e1-49f3-9128-f2251b43294d",
+    redirectUri: window.location.origin + window.location.pathname
+  },
+  cache: { cacheLocation: "sessionStorage" }
+};
+const msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+let accessToken = null;
+
+function appendOut(txt){
+  const o = document.getElementById('out');
+  o.style.display = 'block';
+  o.textContent += (o.textContent ? '\n\n' : '') + txt;
+}
+
+async function graphGet(path, extra){
+  const headers = { 'Authorization': `Bearer ${accessToken}` };
+  if(extra) Object.assign(headers, extra);
+  const res = await fetch(`https://graph.microsoft.com/v1.0${path}`, { headers });
+  if(!res.ok) throw new Error(`Graph ${res.status} em ${path} — ${await res.text()}`);
+  return res.json();
+}
+
+async function investigar(sitePath, label){
+  let out = `=== ${label} ===\n`;
+  try{
+    const sitePathSuffix = sitePath ? `:/sites/${sitePath}` : '';
+    const site = await graphGet(`/sites/lucralize.sharepoint.com${sitePathSuffix}`);
+    const listsResp = await graphGet(`/sites/${site.id}/lists?$select=id,name,displayName`);
+    const list = listsResp.value.find(l => l.displayName === 'Certificados' || l.name === 'Certificados');
+    if(!list){
+      out += `Lista "Certificados" não encontrada nesse site.\nListas existentes:\n`;
+      listsResp.value.forEach(l => { out += `- ${l.displayName}\n`; });
+      appendOut(out);
+      return;
+    }
+    const itemsResp = await graphGet(`/sites/${site.id}/lists/${list.id}/items?$expand=fields&$top=1`);
+    if(!itemsResp.value.length){
+      out += `Lista encontrada (id: ${list.id}), mas está vazia — sem item pra mostrar os campos.\n`;
+      appendOut(out);
+      return;
+    }
+    const fields = itemsResp.value[0].fields;
+    out += `Campos do primeiro item:\n`;
+    Object.keys(fields).forEach(k => { out += `${k}: ${JSON.stringify(fields[k])}\n`; });
+    appendOut(out);
+  }catch(e){
+    out += `ERRO: ${e.message}\n`;
+    appendOut(out);
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  try{
+    const result = await msalInstance.loginPopup({ scopes: ["Sites.Read.All", "User.Read"] });
+    accessToken = result.accessToken;
+    btn.textContent = '✅ Login feito — ' + result.account.username;
+    document.getElementById('runContabilBtn').disabled = false;
+    document.getElementById('runTechBtn').disabled = false;
+  }catch(err){
+    alert('Erro no login: ' + err.message);
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('runContabilBtn').addEventListener('click', () => investigar(null, 'Certificados — Contabilidade (site raiz)'));
+document.getElementById('runTechBtn').addEventListener('click', () => investigar('LUCRALIZETECH', 'Certificados — Tech'));
+</script>
+</body>
+</html>
