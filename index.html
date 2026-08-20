@@ -945,6 +945,34 @@ async function spResolveCancelList(divisao){
   _spCancelSiteIds[divisao]=site.id;_spCancelListIds[divisao]=list.id;
   return{siteId:site.id,listId:list.id};
 }
+let _spCancelLookupSrc={};
+async function spResolveRazaoLookupSource(divisao){
+  if(_spCancelLookupSrc[divisao])return _spCancelLookupSrc[divisao];
+  const cfg=SP_CONFIG.cancelamentoLists[divisao];
+  const{siteId,listId}=await spResolveCancelList(divisao);
+  const internalName=cfg.fields.razaoLookupId.replace(/LookupId$/,'');
+  const cols=await spGraph('GET',`/sites/${siteId}/lists/${listId}/columns`);
+  const col=cols.value.find(c=>c.name===internalName);
+  if(!col||!col.lookup)throw new Error('Coluna de lookup "'+internalName+'" não encontrada ou sem metadado lookup.');
+  _spCancelLookupSrc[divisao]={siteId,listId:col.lookup.listId};
+  return _spCancelLookupSrc[divisao];
+}
+async function spFetchLookupTitleMap(divisao){
+  const{siteId,listId}=await spResolveRazaoLookupSource(divisao);
+  const map={};
+  let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=2000`,guard=0;
+  while(url&&guard<200){
+    guard++;
+    const resp=await spGraph('GET',url,null,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
+    (resp.value||[]).forEach(item=>{
+      const f=item.fields||{};
+      const cnpj=f['CNPJ_x002f_CPF_x002f_CEI']||f['field_3']||f['field_1']||'';
+      map[item.id]={title:f['Title']||'',cnpj:cnpj?cnpj.toString():''};
+    });
+    url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
+  }
+  return map;
+}
 async function spFetchSaidaClientes(){
   if(!_spToken)return;
   const all=[],errors=[];
@@ -953,6 +981,7 @@ async function spFetchSaidaClientes(){
     try{
       const cfg=SP_CONFIG.cancelamentoLists[divisao];
       const{siteId,listId}=await spResolveCancelList(divisao);
+      const lookupMap=await spFetchLookupTitleMap(divisao);
       let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
       while(url&&guard<200){
         guard++;
@@ -964,12 +993,13 @@ async function spFetchSaidaClientes(){
           const terminoIso=spDateToLocal(f[cfg.fields.terminoContrato]);
           if(!terminoIso||terminoIso<hojeStr)return;
           const lookupId=f[cfg.fields.razaoLookupId]?f[cfg.fields.razaoLookupId].toString():null;
+          const lk=lookupId?lookupMap[lookupId]:null;
           const master=lookupId?_masterItemById[divisao][lookupId]:null;
           all.push({
             itemId:item.id,
             divisao,
-            cnpj:master?master.cnpj:'',
-            razaoSocial:master?master.razaoSocial:(f['Title']||'—'),
+            cnpj:(lk&&lk.cnpj)?lk.cnpj:(master?master.cnpj:''),
+            razaoSocial:(lk&&lk.title)?lk.title:(master?master.razaoSocial:(f['Title']||'—')),
             terminoContrato:terminoIso,
             motivoSaida:f[cfg.fields.motivoSaida]||'',
             docStatus:docStatus||'Não'
