@@ -534,6 +534,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <option value="EM CANCELAMENTO">Em Cancelamento</option>
           </select>
         </div>
+        <button class="btn btn-outline" style="margin-left:8px;" onclick="exportarSuspensosImagem()">📷 Extrair Imagem</button>
       </div>
       <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Controle de Clientes / Base de Usuários) — somente leitura.</div>
       <div class="card">
@@ -1594,6 +1595,57 @@ function renderSuspTable(){
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
   tbody.innerHTML=data.map(c=>`<tr class="urgente-15"><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-warning">${c.situacao==='EM CANCELAMENTO'?'🚫 Em Cancelamento':'⏸️ Suspenso'}</span></td></tr>`).join('');
+}
+
+async function exportarSuspensosImagem(){
+  const search=document.getElementById('susp-search').value.toLowerCase(),divF=document.getElementById('susp-filter-div').value,sitF=document.getElementById('susp-filter-situacao')?.value||'';
+  let data=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO'||c.situacao==='EM CANCELAMENTO');
+  if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
+  if(divF)data=data.filter(c=>c.divisao===divF);
+  if(sitF)data=data.filter(c=>c.situacao===sitF);
+  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
+  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR'));
+  const tech=data.filter(c=>c.divisao==='Tech');
+  const cont=data.filter(c=>c.divisao==='Contabilidade');
+  const nTechSusp=tech.filter(c=>c.situacao==='SUSPENSO').length;
+  const nContSusp=cont.filter(c=>c.situacao==='SUSPENSO').length;
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const _logoSrc2=localStorage.getItem('triagem_logo')||LUCRALIZE_LOGO;
+  const logoHtml=`<img src="${_logoSrc2}" style="height:40px;object-fit:contain;margin-right:10px;" crossorigin="anonymous">`;
+  function stBadge(sit){return sit==='EM CANCELAMENTO'?'<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#fee2e2;color:#991b1b;">Em Cancelamento</span>':'<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#fef3c7;color:#92400e;">Suspenso</span>';}
+  function buildRows(list){return list.map((c,i)=>`<tr style="background:${i%2===0?'#f7fafd':'#fff'};"><td style="padding:5px 10px;font-size:11px;color:#64748b;border-bottom:1px solid #e8f4f7;">${c.cnpj}</td><td style="padding:5px 10px;font-size:12px;border-bottom:1px solid #e8f4f7;">${c.razaoSocial}</td><td style="padding:5px 10px;border-bottom:1px solid #e8f4f7;">${stBadge(c.situacao)}</td></tr>`).join('');}
+  function buildSection(label,list,nSusp,color){
+    if(!list.length)return'';
+    return`<div style="flex:1;min-width:0;"><div style="background:${color};color:#fff;padding:10px 14px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:13px;">${label}</span><span style="font-size:11px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">${nSusp} suspenso${nSusp!==1?'s':''} · ${list.length} total</span></div><table style="width:100%;border-collapse:collapse;border:1px solid #e8f4f7;border-top:none;"><thead><tr style="background:#f0f9fb;"><th style="padding:6px 10px;font-size:10px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">CNPJ</th><th style="padding:6px 10px;font-size:10px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">Razão Social</th><th style="padding:6px 10px;font-size:10px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">Situação</th></tr></thead><tbody>${buildRows(list)}</tbody></table></div>`;
+  }
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:1200px;background:#f7fafd;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
+  wrap.innerHTML=`
+    <div style="background:#0d1328;color:#fff;padding:12px 16px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;">
+      <div style="flex:0 0 auto;">${logoHtml}</div>
+      <div style="flex:1;text-align:center;font-size:17px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">Suspenso / Em Cancelamento</div>
+      <div style="flex:0 0 auto;text-align:right;font-size:10px;color:#91dbe4;"><div>${hoje}</div><div style="margin-top:2px;">${data.length} registros</div></div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      ${buildSection('Contabilidade',cont,nContSusp,'#0c7387')}
+      ${buildSection('Tech',tech,nTechSusp,'#0c7488')}
+    </div>
+    <div style="margin-top:12px;font-size:10px;color:#94a3b8;text-align:center;padding-top:8px;border-top:1px solid #e8f4f7;">Central de Triagem — Lucralize · ${hoje}</div>`;
+  document.body.appendChild(wrap);
+  toast('Gerando imagem...','info');
+  try{
+    const canvas=await html2canvas(wrap,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f7fafd'});
+    document.body.removeChild(wrap);
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download=`suspenso_em_cancelamento_${today()}.png`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    toast('Imagem exportada!');
+  }catch(e){
+    document.body.removeChild(wrap);
+    toast('Erro ao gerar imagem.','error');
+    console.error(e);
+  }
 }
 
 // ==================== CERT EXPORTS ====================
