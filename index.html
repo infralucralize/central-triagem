@@ -1029,6 +1029,11 @@ async function spFetchClientStatuses(){
   _clientStatusCache=all;
   renderSaidaTable();renderSuspTable();updateBadges();
   if(errors.length)toast('Erro ao sincronizar status de clientes — '+errors.join(' | '),'error');
+  else{
+    const situacoesUnicas=[...new Set(all.map(c=>c.situacao))].join(', ');
+    toast(`Diagnóstico: ${all.length} clientes lidos. Situações encontradas: ${situacoesUnicas||'(nenhuma)'}`,'info');
+    console.log('[Diagnóstico status clientes]', all.length, 'itens. Situações:', situacoesUnicas, all.slice(0,3));
+  }
 }
 function spDateToLocal(iso){if(!iso)return'';return iso.split('T')[0];}
 function spDateFromLocal(d){if(!d)return null;return d+'T03:00:00Z';}
