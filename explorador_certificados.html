@@ -92,15 +92,25 @@ async function investigar(sitePath, label){
       appendOut(out);
       return;
     }
-    const itemsResp = await graphGet(`/sites/${site.id}/lists/${list.id}/items?$expand=fields&$top=1`);
+    const columnsResp = await graphGet(`/sites/${site.id}/lists/${list.id}/columns?$select=name,displayName,hidden,readOnly`);
+    out += `Colunas da lista (nome interno -> nome de exibição):\n`;
+    columnsResp.value
+      .filter(c => !c.hidden && !c.readOnly)
+      .forEach(c => { out += `${c.name}  ->  "${c.displayName}"\n`; });
+    out += `\n`;
+
+    const itemsResp = await graphGet(`/sites/${site.id}/lists/${list.id}/items?$expand=fields&$top=5`);
     if(!itemsResp.value.length){
       out += `Lista encontrada (id: ${list.id}), mas está vazia — sem item pra mostrar os campos.\n`;
       appendOut(out);
       return;
     }
-    const fields = itemsResp.value[0].fields;
-    out += `Campos do primeiro item:\n`;
-    Object.keys(fields).forEach(k => { out += `${k}: ${JSON.stringify(fields[k])}\n`; });
+    out += `--- Dados dos primeiros ${itemsResp.value.length} itens ---\n`;
+    itemsResp.value.forEach((item, idx) => {
+      out += `\nItem ${idx + 1}:\n`;
+      const fields = item.fields;
+      Object.keys(fields).forEach(k => { out += `  ${k}: ${JSON.stringify(fields[k])}\n`; });
+    });
     appendOut(out);
   }catch(e){
     out += `ERRO: ${e.message}\n`;
