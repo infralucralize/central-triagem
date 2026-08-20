@@ -997,10 +997,10 @@ async function spResolveMasterList(divisao){
 }
 function _cleanUpper(s){return(s||'').toString().trim().toUpperCase();}
 async function spFetchClientStatuses(){
-  try{
-    if(!_spToken)return;
-    const all=[];
-    for(const divisao of Object.keys(SP_CONFIG.masterLists)){
+  if(!_spToken)return;
+  const all=[],errors=[];
+  for(const divisao of Object.keys(SP_CONFIG.masterLists)){
+    try{
       const cfg=SP_CONFIG.masterLists[divisao];
       const{siteId,listId}=await spResolveMasterList(divisao);
       let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
@@ -1021,12 +1021,14 @@ async function spFetchClientStatuses(){
         });
         url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
       }
+    }catch(e){
+      console.error(`Erro ao buscar lista mestra (${divisao}):`,e);
+      errors.push(`${divisao}: ${e.message}`);
     }
-    _clientStatusCache=all;
-    renderSaidaTable();renderSuspTable();updateBadges();
-  }catch(e){
-    console.error('Erro ao buscar status de clientes:',e);
   }
+  _clientStatusCache=all;
+  renderSaidaTable();renderSuspTable();updateBadges();
+  if(errors.length)toast('Erro ao sincronizar status de clientes — '+errors.join(' | '),'error');
 }
 function spDateToLocal(iso){if(!iso)return'';return iso.split('T')[0];}
 function spDateFromLocal(d){if(!d)return null;return d+'T03:00:00Z';}
