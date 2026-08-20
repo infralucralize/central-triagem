@@ -487,14 +487,12 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <option>Contabilidade</option>
             <option>Tech</option>
           </select>
-          <select class="form-control" style="width:160px;" id="saida-filter-situacao" onchange="renderSaidaTable()">
-            <option value="">Todas as situações</option>
-            <option value="INATIVO">Inativo</option>
-            <option value="BAIXADA">Baixada</option>
+          <select class="form-control" style="width:180px;" id="saida-filter-motivo" onchange="renderSaidaTable()">
+            <option value="">Todos os motivos</option>
           </select>
         </div>
       </div>
-      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Controle de Clientes / Base de Usuários) — somente leitura.</div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Cancelamento de Clientes / Cancelamento e Suspenso de Clientes). Mostra apenas clientes com término de contrato a partir de hoje e documentação ainda não enviada. Marcar o checkbox grava direto no SharePoint.</div>
       <div class="card">
         <div class="card-body">
           <div class="table-wrap">
@@ -504,7 +502,9 @@ tr.row-success:hover { background: #dcfce7 !important; }
                   <th>CNPJ</th>
                   <th>Razão Social</th>
                   <th>Divisão</th>
-                  <th>Situação</th>
+                  <th>Término do Contrato</th>
+                  <th>Motivo da Saída</th>
+                  <th>Documentação Enviada</th>
                 </tr>
               </thead>
               <tbody id="saida-table-body"></tbody>
@@ -925,10 +925,84 @@ const SP_CONFIG={
   masterLists:{
     Contabilidade:{sitePath:null,listName:"Controle de Clientes",fields:{title:'Title',cnpj:'CNPJ_x002f_CPF_x002f_CEI',situacao:'Situa_x00e7__x00e3_o',grupo:'GrupoEmpresarial'}},
     Tech:{sitePath:"LUCRALIZETECH",listName:"Base de Usuários",fields:{title:'Title',cnpj:'field_3',situacao:'Situa_x00e7__x00e3_o'}}
+  },
+  cancelamentoLists:{
+    Contabilidade:{sitePath:null,listName:"Cancelamento de Clientes",fields:{razaoLookupId:'Raz_x00e3_oSocialLookupId',terminoContrato:'TerminodoContrato',motivoSaida:'MotivodaSa_x00ed_da',docCampo:'Documenta_x00e7__x00e3_oEnviada',situacaoPedido:'Situa_x00e7__x00e3_o'}},
+    Tech:{sitePath:"LUCRALIZETECH",listName:"Cancelamento e Suspenso de Clientes",fields:{razaoLookupId:'Raz_x00e3_oSocialLookupId',terminoContrato:'TerminodoContrato',motivoSaida:'MotivodaSa_x00ed_da',docCampo:'Documenta_x00e7__x00e3_oRecebida',situacaoPedido:'Situa_x00e7__x00e3_odoPedidodeCa'}}
   }
 };
-let _spMsal=null,_spToken=null,_spSiteIds={},_spListIds={},_spMasterSiteIds={},_spMasterListIds={},_clientStatusCache=[];
+let _spMsal=null,_spToken=null,_spSiteIds={},_spListIds={},_spMasterSiteIds={},_spMasterListIds={},_spCancelSiteIds={},_spCancelListIds={},_clientStatusCache=[],_masterItemById={Contabilidade:{},Tech:{}},_saidaCache=[];
+const VALOR_SITUACAO_PEDIDO_CONCLUIDO='Cancelado/Documentação';
 
+async function spResolveCancelList(divisao){
+  if(_spCancelListIds[divisao])return{siteId:_spCancelSiteIds[divisao],listId:_spCancelListIds[divisao]};
+  const cfg=SP_CONFIG.cancelamentoLists[divisao];if(!cfg)throw new Error('Divisão sem lista de cancelamento: '+divisao);
+  const sitePathSuffix=cfg.sitePath?`:/sites/${cfg.sitePath}`:'';
+  const site=await spGraph('GET',`/sites/${SP_CONFIG.hostname}${sitePathSuffix}`);
+  const lists=await spGraph('GET',`/sites/${site.id}/lists?$select=id,name,displayName`);
+  const list=lists.value.find(l=>l.displayName===cfg.listName||l.name===cfg.listName);
+  if(!list)throw new Error('Lista de cancelamento não encontrada: '+cfg.listName+' em '+divisao);
+  _spCancelSiteIds[divisao]=site.id;_spCancelListIds[divisao]=list.id;
+  return{siteId:site.id,listId:list.id};
+}
+async function spFetchSaidaClientes(){
+  if(!_spToken)return;
+  const all=[],errors=[];
+  const hojeStr=today();
+  for(const divisao of Object.keys(SP_CONFIG.cancelamentoLists)){
+    try{
+      const cfg=SP_CONFIG.cancelamentoLists[divisao];
+      const{siteId,listId}=await spResolveCancelList(divisao);
+      let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
+      while(url&&guard<200){
+        guard++;
+        const resp=await spGraph('GET',url,null,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
+        (resp.value||[]).forEach(item=>{
+          const f=item.fields||{};
+          const docStatus=(f[cfg.fields.docCampo]||'').toString().trim();
+          if(docStatus==='Sim')return;
+          const terminoIso=spDateToLocal(f[cfg.fields.terminoContrato]);
+          if(!terminoIso||terminoIso<hojeStr)return;
+          const lookupId=f[cfg.fields.razaoLookupId]?f[cfg.fields.razaoLookupId].toString():null;
+          const master=lookupId?_masterItemById[divisao][lookupId]:null;
+          all.push({
+            itemId:item.id,
+            divisao,
+            cnpj:master?master.cnpj:'',
+            razaoSocial:master?master.razaoSocial:(f['Title']||'—'),
+            terminoContrato:terminoIso,
+            motivoSaida:f[cfg.fields.motivoSaida]||'',
+            docStatus:docStatus||'Não'
+          });
+        });
+        url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
+      }
+    }catch(e){
+      console.error(`Erro ao buscar lista de cancelamento (${divisao}):`,e);
+      errors.push(`${divisao}: ${e.message}`);
+    }
+  }
+  _saidaCache=all;
+  renderSaidaTable();updateBadges();
+  if(errors.length)toast('Erro ao sincronizar saída de clientes — '+errors.join(' | '),'error');
+}
+async function spMarcarDocEnviada(itemId,divisao){
+  const cfg=SP_CONFIG.cancelamentoLists[divisao];if(!cfg)return;
+  try{
+    const{siteId,listId}=await spResolveCancelList(divisao);
+    const fields={};
+    fields[cfg.fields.docCampo]='Sim';
+    fields[cfg.fields.situacaoPedido]=VALOR_SITUACAO_PEDIDO_CONCLUIDO;
+    await spGraph('PATCH',`/sites/${siteId}/lists/${listId}/items/${itemId}/fields`,fields);
+    _saidaCache=_saidaCache.filter(s=>!(s.itemId===itemId&&s.divisao===divisao));
+    renderSaidaTable();updateBadges();
+    toast('Documentação marcada como enviada!');
+  }catch(e){
+    console.error('Erro ao marcar documentação enviada:',e);
+    toast('Erro ao salvar no SharePoint: '+e.message,'error');
+    renderSaidaTable();
+  }
+}
 function _spSetStatus(txt){const el=document.getElementById('sp-sync-status');if(el)el.textContent=txt;}
 
 async function spEnsureMsal(){
@@ -1010,6 +1084,7 @@ function _cleanUpper(s){return(s||'').toString().trim().toUpperCase();}
 async function spFetchClientStatuses(){
   if(!_spToken)return;
   const all=[],errors=[];
+  _masterItemById={Contabilidade:{},Tech:{}};
   for(const divisao of Object.keys(SP_CONFIG.masterLists)){
     try{
       const cfg=SP_CONFIG.masterLists[divisao];
@@ -1022,13 +1097,16 @@ async function spFetchClientStatuses(){
           const f=item.fields||{};
           const cnpj=f[cfg.fields.cnpj];
           if(!cnpj)return;
+          const razaoSocial=f[cfg.fields.title]||'';
           all.push({
+            id:item.id,
             cnpj:cnpj.toString(),
-            razaoSocial:f[cfg.fields.title]||'',
+            razaoSocial,
             divisao,
             situacao:_cleanUpper(f[cfg.fields.situacao]),
             grupo:cfg.fields.grupo?(f[cfg.fields.grupo]||''):''
           });
+          _masterItemById[divisao][item.id]={cnpj:cnpj.toString(),razaoSocial};
         });
         url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
       }
@@ -1038,8 +1116,9 @@ async function spFetchClientStatuses(){
     }
   }
   _clientStatusCache=all;
-  renderSaidaTable();renderSuspTable();updateBadges();
+  renderSuspTable();updateBadges();
   if(errors.length)toast('Erro ao sincronizar status de clientes — '+errors.join(' | '),'error');
+  await spFetchSaidaClientes();
 }
 function spDateToLocal(iso){if(!iso)return'';return iso.split('T')[0];}
 function spDateFromLocal(d){if(!d)return null;return d+'T03:00:00Z';}
@@ -1453,18 +1532,24 @@ function confirmarTodosDisparos(){
   dbSet('certs',certs);closeModal('modal-dispatch');toast(`Envio confirmado para ${disparosPendentes.length} cliente(s). Próximo em 2 dias.`);disparosPendentes=[];renderCertsTable();
 }
 
-// ==================== MÓDULO 4: SAÍDA (somente leitura, via SharePoint) ====================
+// ==================== MÓDULO 4: SAÍDA (via listas de Cancelamento — leitura + escrita do checkbox) ====================
 function renderSaidaTable(){
-  const search=document.getElementById('saida-search').value.toLowerCase(),divF=document.getElementById('saida-filter-div').value,sitF=document.getElementById('saida-filter-situacao')?.value||'';
-  let data=_clientStatusCache.filter(c=>c.situacao==='INATIVO'||c.situacao==='BAIXADA');
+  const search=document.getElementById('saida-search').value.toLowerCase(),divF=document.getElementById('saida-filter-div').value,motF=document.getElementById('saida-filter-motivo')?.value||'';
+  let data=_saidaCache.slice();
   if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
   if(divF)data=data.filter(c=>c.divisao===divF);
-  if(sitF)data=data.filter(c=>c.situacao===sitF);
+  if(motF)data=data.filter(c=>c.motivoSaida===motF);
   data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
+  const motivoSel=document.getElementById('saida-filter-motivo');
+  if(motivoSel){
+    const motivosUnicos=[...new Set(_saidaCache.map(c=>c.motivoSaida).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    const atual=motivoSel.value;
+    motivoSel.innerHTML='<option value="">Todos os motivos</option>'+motivosUnicos.map(m=>`<option value="${m.replace(/"/g,'&quot;')}"${m===atual?' selected':''}>${m}</option>`).join('');
+  }
   const tbody=document.getElementById('saida-table-body'),empty=document.getElementById('saida-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  tbody.innerHTML=data.map(c=>`<tr><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-gray">${c.situacao==='BAIXADA'?'Baixada':'Inativo'}</span></td></tr>`).join('');
+  tbody.innerHTML=data.map(c=>`<tr><td><code style="font-size:12px;">${c.cnpj||'—'}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td style="font-size:12px;">${fmtDate(c.terminoContrato)}</td><td>${c.motivoSaida||'—'}</td><td style="text-align:center;"><input type="checkbox" title="Marcar documentação como enviada" onchange="spMarcarDocEnviada('${c.itemId}','${c.divisao}')"></td></tr>`).join('');
 }
 
 // ==================== MÓDULO 5: SUSPENSO/EM CANCELAMENTO (somente leitura, via SharePoint) ====================
