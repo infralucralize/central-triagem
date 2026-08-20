@@ -273,6 +273,17 @@ tr.row-success:hover { background: #dcfce7 !important; }
 </head>
 <body>
 
+<!-- LOGIN GATE -->
+<div id="login-gate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#060d1a,#0d1b2a);display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:40px 36px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <img id="login-gate-logo" src="" alt="Lucralize" style="height:44px;max-width:220px;object-fit:contain;margin:0 auto 16px;display:block;" onerror="this.style.display='none'">
+    <h2 style="font-size:18px;margin-bottom:6px;color:#0d1b2a;">Central de Triagem</h2>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:24px;">Acesso restrito à equipe Lucralize</p>
+    <button id="login-gate-btn" onclick="gateLogin()" style="width:100%;padding:12px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Entrar com conta Lucralize</button>
+    <div id="login-gate-status" style="margin-top:14px;font-size:12px;color:#9ca3af;"></div>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div id="sidebar-header">
@@ -1203,6 +1214,31 @@ async function spLogin(){
   const result=await _spMsal.loginPopup({scopes:["Sites.ReadWrite.All","User.Read"]});
   _spToken=result.accessToken;
   return _spToken;
+}
+async function gateLogin(){
+  const btn=document.getElementById('login-gate-btn'),status=document.getElementById('login-gate-status');
+  btn.disabled=true;btn.textContent='Entrando...';
+  try{
+    await spEnsureMsal();
+    const result=await _spMsal.loginPopup({scopes:["User.Read","Sites.ReadWrite.All"]});
+    _spToken=result.accessToken;
+    document.getElementById('login-gate').style.display='none';
+  }catch(e){
+    console.error(e);
+    if(status)status.textContent='Erro no login: '+e.message;
+    btn.disabled=false;btn.textContent='Entrar com conta Lucralize';
+  }
+}
+async function gateCheckSession(){
+  try{
+    await spEnsureMsal();
+    const accounts=_spMsal.getAllAccounts();
+    if(accounts.length>0){
+      const result=await _spMsal.acquireTokenSilent({scopes:["User.Read","Sites.ReadWrite.All"],account:accounts[0]});
+      _spToken=result.accessToken;
+      document.getElementById('login-gate').style.display='none';
+    }
+  }catch(e){/* mantém a tela de login visível */}
 }
 async function spGraph(method,path,body){
   const res=await fetch(`https://graph.microsoft.com/v1.0${path}`,{
@@ -2406,6 +2442,11 @@ document.getElementById('sidebar-date').textContent=new Date().toLocaleDateStrin
 renderPainel();
 atualizarLogo();
 initAutoSave();
+gateCheckSession();
+(function(){
+  const el=document.getElementById('login-gate-logo');
+  if(el)el.src=localStorage.getItem('triagem_logo')||LUCRALIZE_LOGO;
+})();
 
 </script>
 </body>
