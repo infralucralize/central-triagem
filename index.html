@@ -310,6 +310,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
     </div>
     <div class="nav-item" onclick="goTo('saida')" id="nav-saida">
       <span class="icon">🚪</span> Saída de Clientes
+      <span class="nav-badge" id="badge-saida" style="display:none"></span>
     </div>
     <div class="nav-item" onclick="goTo('suspensos')" id="nav-suspensos">
       <span class="icon">⏸️</span> Suspenso/Em Cancelamento
@@ -367,8 +368,8 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <option>Tech</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="margin-left:8px;" onclick="openDocsModal()">+ Novo Cliente</button>
       </div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Checklist Documentos). Mostra apenas clientes com Documentos Recebidos = "Não". Marcar cada item ou o checkbox final grava direto no SharePoint.</div>
       <div class="card">
         <div class="card-body">
           <div class="table-wrap">
@@ -378,11 +379,9 @@ tr.row-success:hover { background: #dcfce7 !important; }
                   <th>CNPJ</th>
                   <th>Razão Social</th>
                   <th>Divisão</th>
-                  <th>Docs Pendentes</th>
-                  <th>Cert. Digital</th>
-                  <th>Proc. eCac</th>
-                  <th>Atualizado</th>
+                  <th>Progresso</th>
                   <th></th>
+                  <th>Documentos Recebidos</th>
                 </tr>
               </thead>
               <tbody id="docs-table-body"></tbody>
@@ -390,7 +389,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
           </div>
           <div class="empty-state" id="docs-empty" style="display:none;">
             <div class="icon">📋</div>
-            <p>Nenhum cliente cadastrado ainda.</p>
+            <p>Nenhum cliente com checklist pendente.</p>
           </div>
         </div>
       </div>
@@ -568,134 +567,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
 <!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
-<!-- ==================== MODAL: DOCUMENTOS ==================== -->
-<div class="modal-overlay" id="modal-docs">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-docs-title">Novo Cliente — Checklist de Documentos</h3>
-      <button class="modal-close" onclick="closeModal('modal-docs')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="required">CNPJ</label>
-          <input type="text" class="form-control" id="d-cnpj" placeholder="00.000.000/0000-00" maxlength="18" oninput="maskCNPJ(this)">
-        </div>
-        <div class="form-group">
-          <label class="required">Divisão</label>
-          <select class="form-control" id="d-divisao">
-            <option>Contabilidade</option>
-            <option>Tech</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="required">Razão Social</label>
-        <input type="text" class="form-control" id="d-razao">
-      </div>
-
-      <!-- Grupo A -->
-      <div class="checklist-group">
-        <h4>Grupo A — Societário e Pessoal</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Contrato Social</label>
-            <select class="form-control" id="d-contrato-social"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-contrato-social"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Alterações Contratuais</label>
-            <select class="form-control" id="d-alteracoes"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-alteracoes"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Docs Pessoais dos Sócios</label>
-            <select class="form-control" id="d-docs-socios"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-docs-socios"></div>
-        </div>
-      </div>
-
-      <!-- Grupo B -->
-      <div class="checklist-group">
-        <h4>Grupo B — Acesso Digital</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Certificado Digital</label>
-            <select class="form-control" id="d-cert-digital"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-cert-digital"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Senha Prefeitura</label>
-            <select class="form-control" id="d-senha-pref"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-senha-pref"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Senha Portal Nacional CNPJ</label>
-            <select class="form-control" id="d-senha-portal"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-senha-portal"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Senha Estado</label>
-            <select class="form-control" id="d-senha-estado"><option>Não se aplica</option><option>Pendente</option><option>Recebido</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-senha-estado"></div>
-        </div>
-      </div>
-
-      <!-- Grupo C -->
-      <div class="checklist-group">
-        <h4>Grupo C — Contábil</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Documentações Contábeis</label>
-            <select class="form-control" id="d-docs-contabeis"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-docs-contabeis"></div>
-        </div>
-      </div>
-
-      <!-- Grupo D -->
-      <div class="checklist-group">
-        <h4>Grupo D — Departamento Pessoal</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Folha de Pagamentos</label>
-            <select class="form-control" id="d-folha"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-folha"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Fichas Financeiras</label>
-            <select class="form-control" id="d-fichas-fin"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-fichas-fin"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Fichas de Registro de Empregados</label>
-            <select class="form-control" id="d-fichas-reg"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-fichas-reg"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Senha eSocial / Empregador Web</label>
-            <select class="form-control" id="d-senha-esocial"><option>Pendente</option><option>Recebido</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-senha-esocial"></div>
-        </div>
-      </div>
-
-      <!-- Grupo E -->
-      <div class="checklist-group">
-        <h4>Grupo E — eCac</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Procuração eCac</label>
-            <select class="form-control" id="d-proc-ecac"><option>Pendente</option><option>Emitida</option><option>Não se aplica</option></select></div>
-          <div class="form-group"><label>Data</label><input type="date" class="form-control" id="d-data-proc-ecac"></div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Observações</label>
-        <textarea class="form-control" id="d-obs"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-docs')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveDocs()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
 <!-- ==================== MODAL: CERTIFICADOS ==================== -->
 <div class="modal-overlay" id="modal-cert">
   <div class="modal">
@@ -807,7 +678,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
     <div class="modal-body" id="modal-view-docs-body"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-view-docs')">Fechar</button>
-      <button class="btn btn-primary" id="btn-edit-docs" onclick="">✏️ Editar</button>
     </div>
   </div>
 </div>
@@ -930,8 +800,37 @@ const SP_CONFIG={
   cancelamentoLists:{
     Contabilidade:{sitePath:null,listName:"Cancelamento de Clientes",fields:{razaoLookupId:'Raz_x00e3_oSocialLookupId',terminoContrato:'TerminodoContrato',motivoSaida:'MotivodaSa_x00ed_da',docCampo:'Documenta_x00e7__x00e3_oEnviada',situacaoPedido:'Situa_x00e7__x00e3_o'}},
     Tech:{sitePath:"LUCRALIZETECH",listName:"Cancelamento e Suspenso de Clientes",fields:{razaoLookupId:'Raz_x00e3_oSocialLookupId',terminoContrato:'TerminodoContrato',motivoSaida:'MotivodaSa_x00ed_da',docCampo:'Documenta_x00e7__x00e3_oRecebida',situacaoPedido:'Situa_x00e7__x00e3_odoPedidodeCa'}}
+  },
+  checklistLists:{
+    Contabilidade:{sitePath:null,listName:"Checklist Documentos"},
+    Tech:{sitePath:"LUCRALIZETECH",listName:"Checklist Documentos"}
   }
 };
+const CHECKLIST_CNPJ_FIELD='field_1';
+const CHECKLIST_DOC_RECEBIDOS_FIELD='field_22';
+const CHECKLIST_DOCS=[
+  {field:'field_3',label:'Certificado Digital'},
+  {field:'field_4',label:'Contrato Social e últimas alterações'},
+  {field:'field_5',label:'Documentos pessoais dos sócios (RG ou CNH)'},
+  {field:'field_6',label:'Alvará de localização e funcionamento'},
+  {field:'field_7',label:'Login e senha do portal da prefeitura'},
+  {field:'field_8',label:'Login/senha portal nacional ou recibo IRPF (2 anos)'},
+  {field:'field_9',label:'Login e senha do portal do estado'},
+  {field:'field_10',label:'Inscrição municipal e estadual'},
+  {field:'field_11',label:'Acessos (Simples Nacional, Regularize, outros)'},
+  {field:'field_12',label:'Faturamento dos últimos 12 meses'},
+  {field:'field_13',label:'Memória de cálculo IRPJ e CSLL'},
+  {field:'field_14',label:'Balanço, Balancete e DRE'},
+  {field:'field_15',label:'Planilha de imobilizado'},
+  {field:'field_16',label:'Composição saldos Ativo/Passivo'},
+  {field:'field_17',label:'Razão geral (PDF e Excel)'},
+  {field:'field_18',label:'Ficha de registro atualizada'},
+  {field:'field_19',label:'Ficha financeira atualizada'},
+  {field:'field_20',label:'Login e senha Empregador Web'},
+  {field:'field_21',label:'Período aquisitivo de férias'}
+];
+let _spChecklistSiteIds={},_spChecklistListIds={},_checklistCache=[];
+
 let _spMsal=null,_spToken=null,_spSiteIds={},_spListIds={},_spMasterSiteIds={},_spMasterListIds={},_spCancelSiteIds={},_spCancelListIds={},_clientStatusCache=[],_masterItemById={Contabilidade:{},Tech:{}},_saidaCache=[];
 const VALOR_SITUACAO_PEDIDO_CONCLUIDO='Cancelado/Documentação';
 
@@ -945,6 +844,90 @@ async function spResolveCancelList(divisao){
   if(!list)throw new Error('Lista de cancelamento não encontrada: '+cfg.listName+' em '+divisao);
   _spCancelSiteIds[divisao]=site.id;_spCancelListIds[divisao]=list.id;
   return{siteId:site.id,listId:list.id};
+}
+async function spResolveChecklistList(divisao){
+  if(_spChecklistListIds[divisao])return{siteId:_spChecklistSiteIds[divisao],listId:_spChecklistListIds[divisao]};
+  const cfg=SP_CONFIG.checklistLists[divisao];if(!cfg)throw new Error('Divisão sem lista de checklist: '+divisao);
+  const sitePathSuffix=cfg.sitePath?`:/sites/${cfg.sitePath}`:'';
+  const site=await spGraph('GET',`/sites/${SP_CONFIG.hostname}${sitePathSuffix}`);
+  const lists=await spGraph('GET',`/sites/${site.id}/lists?$select=id,name,displayName`);
+  const list=lists.value.find(l=>l.displayName===cfg.listName||l.name===cfg.listName);
+  if(!list)throw new Error('Lista de checklist não encontrada: '+cfg.listName+' em '+divisao);
+  _spChecklistSiteIds[divisao]=site.id;_spChecklistListIds[divisao]=list.id;
+  return{siteId:site.id,listId:list.id};
+}
+async function spFetchChecklist(){
+  if(!_spToken)return;
+  const all=[],errors=[];
+  for(const divisao of Object.keys(SP_CONFIG.checklistLists)){
+    try{
+      const{siteId,listId}=await spResolveChecklistList(divisao);
+      let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
+      while(url&&guard<200){
+        guard++;
+        const resp=await spGraph('GET',url,null,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
+        (resp.value||[]).forEach(item=>{
+          const f=item.fields||{};
+          const recebido=(f[CHECKLIST_DOC_RECEBIDOS_FIELD]||'').toString().trim();
+          if(recebido!=='Não')return;
+          const docs={};
+          CHECKLIST_DOCS.forEach(d=>{docs[d.field]=(f[d.field]||'Não').toString().trim();});
+          all.push({
+            itemId:item.id,
+            divisao,
+            cnpj:f[CHECKLIST_CNPJ_FIELD]||'',
+            razaoSocial:f['Title']||'—',
+            docs,
+            docRecebidos:recebido
+          });
+        });
+        url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
+      }
+    }catch(e){
+      console.error(`Erro ao buscar checklist (${divisao}):`,e);
+      errors.push(`${divisao}: ${e.message}`);
+    }
+  }
+  _checklistCache=all;
+  renderDocsTable();updateBadges();
+  if(errors.length)toast('Erro ao sincronizar checklist de documentos — '+errors.join(' | '),'error');
+}
+async function spMarcarChecklistCampo(itemId,divisao,fieldName,valor){
+  const{siteId,listId}=await spResolveChecklistList(divisao);
+  const fields={};fields[fieldName]=valor;
+  await spGraph('PATCH',`/sites/${siteId}/lists/${listId}/items/${itemId}/fields`,fields);
+}
+async function checklistToggleDoc(itemId,divisao,fieldName,checkboxEl){
+  const valor=checkboxEl.checked?'Sim':'Não';
+  checkboxEl.disabled=true;
+  try{
+    await spMarcarChecklistCampo(itemId,divisao,fieldName,valor);
+    const item=_checklistCache.find(c=>c.itemId===itemId&&c.divisao===divisao);
+    if(item)item.docs[fieldName]=valor;
+    renderDocsTable();
+    const progEl=document.getElementById(`docs-progress-${itemId}`);
+    if(item&&progEl)progEl.textContent=`${Object.values(item.docs).filter(v=>v==='Sim').length}/${CHECKLIST_DOCS.length}`;
+  }catch(e){
+    console.error(e);
+    toast('Erro ao salvar no SharePoint: '+e.message,'error');
+    checkboxEl.checked=!checkboxEl.checked;
+  }finally{
+    checkboxEl.disabled=false;
+  }
+}
+async function checklistMarcarRecebido(itemId,divisao,checkboxEl){
+  if(checkboxEl)checkboxEl.disabled=true;
+  try{
+    await spMarcarChecklistCampo(itemId,divisao,CHECKLIST_DOC_RECEBIDOS_FIELD,'Sim');
+    _checklistCache=_checklistCache.filter(c=>!(c.itemId===itemId&&c.divisao===divisao));
+    closeModal('modal-view-docs');
+    renderDocsTable();updateBadges();
+    toast('Documentação marcada como recebida!');
+  }catch(e){
+    console.error(e);
+    toast('Erro ao salvar no SharePoint: '+e.message,'error');
+    if(checkboxEl){checkboxEl.checked=false;checkboxEl.disabled=false;}
+  }
 }
 let _spCancelLookupSrc={};
 async function spResolveRazaoLookupSource(divisao){
@@ -1058,7 +1041,7 @@ async function gateLogin(){
     const result=await _spMsal.loginPopup({scopes:["User.Read","Sites.ReadWrite.All"]});
     _spToken=result.accessToken;
     document.getElementById('login-gate').style.display='none';
-    spSyncCertsPull();spFetchClientStatuses();
+    spSyncCertsPull();spFetchClientStatuses();spFetchChecklist();
   }catch(e){
     console.error(e);
     if(status)status.textContent='Erro no login: '+e.message;
@@ -1073,7 +1056,7 @@ async function gateCheckSession(){
       const result=await _spMsal.acquireTokenSilent({scopes:["User.Read","Sites.ReadWrite.All"],account:accounts[0]});
       _spToken=result.accessToken;
       document.getElementById('login-gate').style.display='none';
-      spSyncCertsPull();spFetchClientStatuses();
+      spSyncCertsPull();spFetchClientStatuses();spFetchChecklist();
     }
   }catch(e){/* mantém a tela de login visível */}
 }
@@ -1327,100 +1310,81 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // ==================== BADGES ====================
-function countPending(d){
-  return ['contratoSocial','alteracoes','docsSocios','certDigital','senhaPref','senhaPortal','senhaEstado','docsContabeis','folha','fichasFinanceiras','fichasRegistro','senhaEsocial'].filter(f=>d[f]==='Pendente').length;
-}
 function updateBadges(){
-  const docs=dbGet('docs'),certs=dbGet('certs');
-  setBadge('badge-docs',docs.filter(d=>countPending(d)>0).length);
+  const certs=dbGet('certs');
+  setBadge('badge-docs',_checklistCache.length);
   setBadge('badge-certs',certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=30;}).length);
+  setBadge('badge-saida',_saidaCache.length);
   setBadge('badge-susp',_clientStatusCache.filter(c=>c.situacao==='SUSPENSO'||c.situacao==='EM CANCELAMENTO').length);
 }
 function setBadge(id,n){const el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n;el.style.display='';}else el.style.display='none';}
 
 // ==================== PAINEL ====================
 function renderPainel(){
-  const docs=dbGet('docs'),certs=dbGet('certs'),saidas=dbGet('saida'),susps=dbGet('susp');
+  const certs=dbGet('certs');
   const cv15=certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=15;});
   const cv30=certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>15&&d<=30;});
   const pv15=certs.filter(c=>{const d=daysDiff(c.procVenc);return d!==null&&d>=0&&d<=15;});
   const pv30=certs.filter(c=>{const d=daysDiff(c.procVenc);return d!==null&&d>15&&d<=30;});
-  const sp=saidas.filter(s=>s.docsEnviados==='Pendente');
-  const sa=susps.filter(s=>s.status==='Suspenso');
-  const ssv=sa.filter(s=>s.status==='Suspenso');
-  const dp=docs.filter(d=>countPending(d)>0);
-  const sq=susps.filter(s=>s.status==='Suspenso'&&s.debito==='Quitado').length;
-  const sn=susps.filter(s=>s.status==='Suspenso'&&s.debito==='Negociando').length;
+  const sp=_saidaCache;
+  const sa=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO');
+  const sec=_clientStatusCache.filter(c=>c.situacao==='EM CANCELAMENTO');
+  const dp=_checklistCache;
   const tot=cv15.length+pv15.length+sp.length;
 
   document.getElementById('painel-stats').innerHTML=`
     <div class="stat-card"><div class="stat-icon red">🔴</div><div><div class="stat-value">${tot}</div><div class="stat-label">Urgentes</div><div class="stat-sub">Ação imediata</div></div></div>
-    <div class="stat-card"><div class="stat-icon yellow">🟡</div><div><div class="stat-value">${cv30.length+pv30.length+ssv.length}</div><div class="stat-label">Atenção</div><div class="stat-sub">Acompanhar</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow">🟡</div><div><div class="stat-value">${cv30.length+pv30.length}</div><div class="stat-label">Atenção</div><div class="stat-sub">Acompanhar</div></div></div>
     <div class="stat-card"><div class="stat-icon blue">📋</div><div><div class="stat-value">${dp.length}</div><div class="stat-label">Docs Pendentes</div><div class="stat-sub">Checklists incompletos</div></div></div>
     <div class="stat-card"><div class="stat-icon gray">⏸️</div><div><div class="stat-value">${sa.length}</div><div class="stat-label">Suspensos</div><div class="stat-sub">Contratos ativos</div></div></div>`;
 
   let urg='';
   if(cv15.length) urg+=`<div class="alert alert-danger">🔐 <strong>${cv15.length} certificado(s)</strong> vencendo em ≤15 dias</div>`;
   if(pv15.length) urg+=`<div class="alert alert-danger">📜 <strong>${pv15.length} procuração(ões) eCac</strong> vencendo em ≤15 dias</div>`;
-  if(sp.length) urg+=`<div class="alert alert-danger">🚪 <strong>${sp.length} envio(s)</strong> de documentos pendentes</div>`;
+  if(sp.length) urg+=`<div class="alert alert-danger">🚪 <strong>${sp.length} envio(s)</strong> de documentos pendentes (saída)</div>`;
   document.getElementById('painel-urgente').innerHTML=urg||'<p class="text-gray text-sm">✅ Nenhuma urgência.</p>';
 
   let atn='';
   if(cv30.length) atn+=`<div class="alert alert-warning">🔐 ${cv30.length} certificado(s) vencendo em 16–30 dias</div>`;
   if(pv30.length) atn+=`<div class="alert alert-warning">📜 ${pv30.length} procuração(ões) vencendo em 16–30 dias</div>`;
-  if(ssv.length) atn+=`<div class="alert alert-warning">⏸️ ${ssv.length} suspenso(s) sem verificação há +15 dias</div>`;
+  if(sec.length) atn+=`<div class="alert alert-warning">🚫 ${sec.length} cliente(s) em cancelamento</div>`;
   document.getElementById('painel-atencao').innerHTML=atn||'<p class="text-gray text-sm">✅ Nada a acompanhar.</p>';
 
   let dh='';
-  if(dp.length){dh=`<p class="text-sm text-gray" style="margin-bottom:8px;">${dp.length} cliente(s) com checklist incompleto:</p>`;dh+=dp.slice(0,5).map(d=>`<div class="flex-between" style="padding:4px 0;border-bottom:1px solid var(--gray-100);font-size:13px;"><span>${d.razaoSocial}</span><span class="badge badge-warning">${countPending(d)} pend.</span></div>`).join('');if(dp.length>5)dh+=`<p class="text-gray text-sm mt-8">...e mais ${dp.length-5}</p>`;}
+  if(dp.length){dh=`<p class="text-sm text-gray" style="margin-bottom:8px;">${dp.length} cliente(s) com checklist incompleto:</p>`;dh+=dp.slice(0,5).map(d=>{const feitos=Object.values(d.docs).filter(v=>v==='Sim').length;return`<div class="flex-between" style="padding:4px 0;border-bottom:1px solid var(--gray-100);font-size:13px;"><span>${d.razaoSocial}</span><span class="badge badge-warning">${feitos}/${CHECKLIST_DOCS.length}</span></div>`;}).join('');if(dp.length>5)dh+=`<p class="text-gray text-sm mt-8">...e mais ${dp.length-5}</p>`;}
   else dh='<p class="text-gray text-sm">✅ Todos completos.</p>';
   document.getElementById('painel-docs').innerHTML=dh;
 
-  const s60=saidas.filter(s=>{const d=daysDiff(s.dataSaida);return d!==null&&d>=-60;});
   document.getElementById('painel-outros').innerHTML=`
-    <p class="text-sm font-bold" style="margin-bottom:6px;">⏸️ Suspensos</p>
-    <div class="flex-between text-sm" style="padding:3px 0;"><span>Total</span><span class="badge badge-warning">${sa.length}</span></div>
-    <div class="flex-between text-sm" style="padding:3px 0;"><span>Quitado — aguardando reativação</span><span class="badge badge-success">${sq}</span></div>
-    <div class="flex-between text-sm" style="padding:3px 0;"><span>Negociando</span><span class="badge badge-info">${sn}</span></div>
+    <p class="text-sm font-bold" style="margin-bottom:6px;">⏸️ Suspenso / Em Cancelamento</p>
+    <div class="flex-between text-sm" style="padding:3px 0;"><span>Suspenso</span><span class="badge badge-warning">${sa.length}</span></div>
+    <div class="flex-between text-sm" style="padding:3px 0;"><span>Em Cancelamento</span><span class="badge badge-danger">${sec.length}</span></div>
     <div class="divider"></div>
-    <p class="text-sm font-bold" style="margin-bottom:6px;">🚪 Saídas (últimos 60 dias)</p>
-    <div class="flex-between text-sm" style="padding:3px 0;"><span>Enviados</span><span class="badge badge-success">${s60.filter(s=>s.docsEnviados==='Sim').length}</span></div>
-    <div class="flex-between text-sm" style="padding:3px 0;"><span>Pendentes</span><span class="badge badge-danger">${s60.filter(s=>s.docsEnviados==='Pendente').length}</span></div>`;
+    <p class="text-sm font-bold" style="margin-bottom:6px;">🚪 Saída de Clientes</p>
+    <div class="flex-between text-sm" style="padding:3px 0;"><span>Documentação pendente</span><span class="badge badge-danger">${sp.length}</span></div>`;
   updateBadges();
 }
 
 // ==================== MÓDULO 1: DOCUMENTOS ====================
-function openDocsModal(id=null){
-  currentEditId=id;
-  document.getElementById('modal-docs-title').textContent=id?'Editar Checklist':'Novo Cliente — Checklist de Documentos';
-  const map={'d-cnpj':'cnpj','d-razao':'razaoSocial','d-divisao':'divisao','d-contrato-social':'contratoSocial','d-data-contrato-social':'dataContratoSocial','d-alteracoes':'alteracoes','d-data-alteracoes':'dataAlteracoes','d-docs-socios':'docsSocios','d-data-docs-socios':'dataDocsSocios','d-cert-digital':'certDigital','d-data-cert-digital':'dataCertDigital','d-senha-pref':'senhaPref','d-data-senha-pref':'dataSenhaPref','d-senha-portal':'senhaPortal','d-data-senha-portal':'dataSenhaPortal','d-senha-estado':'senhaEstado','d-data-senha-estado':'dataSenhaEstado','d-docs-contabeis':'docsContabeis','d-data-docs-contabeis':'dataDocsContabeis','d-folha':'folha','d-data-folha':'dataFolha','d-fichas-fin':'fichasFinanceiras','d-data-fichas-fin':'dataFichasFinanceiras','d-fichas-reg':'fichasRegistro','d-data-fichas-reg':'dataFichasRegistro','d-senha-esocial':'senhaEsocial','d-data-senha-esocial':'dataSenhaEsocial','d-proc-ecac':'procEcac','d-data-proc-ecac':'dataProcEcac','d-obs':'obs'};
-  if(id){const item=dbGet('docs').find(i=>i.id===id);if(item)Object.entries(map).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el&&item[k]!==undefined)el.value=item[k];});}
-  else Object.keys(map).forEach(elId=>{const el=document.getElementById(elId);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
-  openModal('modal-docs');
-}
-function saveDocs(){
-  const cnpj=document.getElementById('d-cnpj').value.trim(),razao=document.getElementById('d-razao').value.trim();
-  if(!cnpj||!razao){toast('CNPJ e Razão Social são obrigatórios.','error');return;}
-  const item={id:currentEditId||null,cnpj,razaoSocial:razao,divisao:document.getElementById('d-divisao').value,contratoSocial:document.getElementById('d-contrato-social').value,dataContratoSocial:document.getElementById('d-data-contrato-social').value,alteracoes:document.getElementById('d-alteracoes').value,dataAlteracoes:document.getElementById('d-data-alteracoes').value,docsSocios:document.getElementById('d-docs-socios').value,dataDocsSocios:document.getElementById('d-data-docs-socios').value,certDigital:document.getElementById('d-cert-digital').value,dataCertDigital:document.getElementById('d-data-cert-digital').value,senhaPref:document.getElementById('d-senha-pref').value,dataSenhaPref:document.getElementById('d-data-senha-pref').value,senhaPortal:document.getElementById('d-senha-portal').value,dataSenhaPortal:document.getElementById('d-data-senha-portal').value,senhaEstado:document.getElementById('d-senha-estado').value,dataSenhaEstado:document.getElementById('d-data-senha-estado').value,docsContabeis:document.getElementById('d-docs-contabeis').value,dataDocsContabeis:document.getElementById('d-data-docs-contabeis').value,folha:document.getElementById('d-folha').value,dataFolha:document.getElementById('d-data-folha').value,fichasFinanceiras:document.getElementById('d-fichas-fin').value,dataFichasFinanceiras:document.getElementById('d-data-fichas-fin').value,fichasRegistro:document.getElementById('d-fichas-reg').value,dataFichasRegistro:document.getElementById('d-data-fichas-reg').value,senhaEsocial:document.getElementById('d-senha-esocial').value,dataSenhaEsocial:document.getElementById('d-data-senha-esocial').value,procEcac:document.getElementById('d-proc-ecac').value,dataProcEcac:document.getElementById('d-data-proc-ecac').value,obs:document.getElementById('d-obs').value,ultimaAtualizacao:today()};
-  dbSave('docs',item);closeModal('modal-docs');renderDocsTable();updateBadges();toast(currentEditId?'Checklist atualizado!':'Cliente cadastrado!');
-}
 function renderDocsTable(){
   const search=document.getElementById('docs-search').value.toLowerCase(),divF=document.getElementById('docs-filter-div').value;
-  let data=dbGet('docs');
-  if(search)data=data.filter(d=>d.cnpj.includes(search)||d.razaoSocial.toLowerCase().includes(search));
+  let data=_checklistCache.slice();
+  if(search)data=data.filter(d=>d.cnpj.toLowerCase().includes(search)||d.razaoSocial.toLowerCase().includes(search));
   if(divF)data=data.filter(d=>d.divisao===divF);
+  data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
   const tbody=document.getElementById('docs-table-body'),empty=document.getElementById('docs-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  function sb(s){if(s==='Recebido'||s==='Emitida')return`<span class="badge badge-success">${s}</span>`;if(s==='Pendente')return`<span class="badge badge-danger">${s}</span>`;return`<span class="badge badge-gray">${s||'—'}</span>`;}
-  tbody.innerHTML=data.map(d=>`<tr><td><code style="font-size:12px;">${d.cnpj}</code></td><td><strong>${d.razaoSocial}</strong></td><td><span class="badge ${d.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${d.divisao}</span></td><td>${countPending(d)>0?`<span class="badge badge-warning">${countPending(d)} pend.</span>`:'<span class="badge badge-success">Completo</span>'}</td><td>${sb(d.certDigital)}</td><td>${sb(d.procEcac)}</td><td style="font-size:11px;color:var(--gray-400);">${fmtDate(d.ultimaAtualizacao)}</td><td><button class="btn btn-outline btn-sm" onclick="viewDocs('${d.id}')">Ver</button> <button class="btn btn-outline btn-sm" onclick="openDocsModal('${d.id}')">✏️</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteItem('docs','${d.id}',renderDocsTable)">🗑</button></td></tr>`).join('');
+  tbody.innerHTML=data.map(d=>{
+    const feitos=Object.values(d.docs).filter(v=>v==='Sim').length;
+    return `<tr><td><code style="font-size:12px;">${d.cnpj}</code></td><td><strong>${d.razaoSocial}</strong></td><td><span class="badge ${d.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${d.divisao}</span></td><td><span class="badge ${feitos===CHECKLIST_DOCS.length?'badge-success':'badge-warning'}" id="docs-progress-${d.itemId}">${feitos}/${CHECKLIST_DOCS.length}</span></td><td><button class="btn btn-outline btn-sm" onclick="viewDocs('${d.itemId}','${d.divisao}')">Ver Checklist</button></td><td style="text-align:center;"><input type="checkbox" title="Marcar Documentos Recebidos como Sim" onchange="checklistMarcarRecebido('${d.itemId}','${d.divisao}',this)"></td></tr>`;
+  }).join('');
 }
-function viewDocs(id){
-  const d=dbGet('docs').find(i=>i.id===id);if(!d)return;
+function viewDocs(itemId,divisao){
+  const d=_checklistCache.find(c=>c.itemId===itemId&&c.divisao===divisao);if(!d)return;
   document.getElementById('modal-view-docs-title').textContent=`${d.razaoSocial} — ${d.cnpj}`;
-  document.getElementById('btn-edit-docs').onclick=()=>{closeModal('modal-view-docs');openDocsModal(id);};
-  function row(label,status,date){const icon=status==='Recebido'||status==='Emitida'?'✅':status==='Pendente'?'⚠️':'➖';const cls=status==='Recebido'||status==='Emitida'?'status-recebido':status==='Pendente'?'status-pendente':'status-nao-aplica';return`<div class="checklist-item"><span style="font-size:16px;">${icon}</span><span class="checklist-label">${label}</span><span class="${cls} checklist-status" style="font-size:12px;font-weight:600;">${status||'—'}</span><span class="checklist-date">${date?fmtDate(date):''}</span></div>`;}
-  document.getElementById('modal-view-docs-body').innerHTML=`<div style="margin-bottom:10px;"><span class="badge ${d.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${d.divisao}</span></div><div class="checklist-group"><h4>Grupo A — Societário</h4>${row('Contrato Social',d.contratoSocial,d.dataContratoSocial)}${row('Alterações Contratuais',d.alteracoes,d.dataAlteracoes)}${row('Docs Pessoais dos Sócios',d.docsSocios,d.dataDocsSocios)}</div><div class="checklist-group"><h4>Grupo B — Acesso Digital</h4>${row('Certificado Digital',d.certDigital,d.dataCertDigital)}${row('Senha Prefeitura',d.senhaPref,d.dataSenhaPref)}${row('Senha Portal Nacional CNPJ',d.senhaPortal,d.dataSenhaPortal)}${row('Senha Estado',d.senhaEstado,d.dataSenhaEstado)}</div><div class="checklist-group"><h4>Grupo C — Contábil</h4>${row('Documentações Contábeis',d.docsContabeis,d.dataDocsContabeis)}</div><div class="checklist-group"><h4>Grupo D — Dep. Pessoal</h4>${row('Folha de Pagamentos',d.folha,d.dataFolha)}${row('Fichas Financeiras',d.fichasFinanceiras,d.dataFichasFinanceiras)}${row('Fichas de Registro',d.fichasRegistro,d.dataFichasRegistro)}${row('Senha eSocial/Empregador Web',d.senhaEsocial,d.dataSenhaEsocial)}</div><div class="checklist-group"><h4>Grupo E — eCac</h4>${row('Procuração eCac',d.procEcac,d.dataProcEcac)}</div>${d.obs?`<div class="alert alert-info" style="margin-top:8px;">📝 ${d.obs}</div>`:''}`;
+  function row(doc){const checked=d.docs[doc.field]==='Sim';return`<div class="checklist-item"><label style="display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;"><input type="checkbox" ${checked?'checked':''} onchange="checklistToggleDoc('${itemId}','${divisao}','${doc.field}',this)"><span class="checklist-label">${doc.label}</span></label></div>`;}
+  document.getElementById('modal-view-docs-body').innerHTML=`<div style="margin-bottom:10px;"><span class="badge ${d.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${d.divisao}</span></div><div class="checklist-group">${CHECKLIST_DOCS.map(row).join('')}</div>`;
   openModal('modal-view-docs');
 }
 
