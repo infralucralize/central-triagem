@@ -310,7 +310,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
     </div>
     <div class="nav-item" onclick="goTo('saida')" id="nav-saida">
       <span class="icon">🚪</span> Saída de Clientes
-      <span class="nav-badge" id="badge-saida" style="display:none"></span>
     </div>
     <div class="nav-item" onclick="goTo('suspensos')" id="nav-suspensos">
       <span class="icon">⏸️</span> Clientes Suspensos
@@ -487,6 +486,11 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <option value="">Todas as divisões</option>
             <option>Contabilidade</option>
             <option>Tech</option>
+          </select>
+          <select class="form-control" style="width:160px;" id="saida-filter-situacao" onchange="renderSaidaTable()">
+            <option value="">Todas as situações</option>
+            <option value="INATIVO">Inativo</option>
+            <option value="BAIXADA">Baixada</option>
           </select>
         </div>
       </div>
@@ -1031,11 +1035,6 @@ async function spFetchClientStatuses(){
   _clientStatusCache=all;
   renderSaidaTable();renderSuspTable();updateBadges();
   if(errors.length)toast('Erro ao sincronizar status de clientes — '+errors.join(' | '),'error');
-  else{
-    const situacoesUnicas=[...new Set(all.map(c=>c.situacao))].join(', ');
-    toast(`Diagnóstico: ${all.length} clientes lidos. Situações encontradas: ${situacoesUnicas||'(nenhuma)'}`,'info');
-    console.log('[Diagnóstico status clientes]', all.length, 'itens. Situações:', situacoesUnicas, all.slice(0,3));
-  }
 }
 function spDateToLocal(iso){if(!iso)return'';return iso.split('T')[0];}
 function spDateFromLocal(d){if(!d)return null;return d+'T03:00:00Z';}
@@ -1220,7 +1219,6 @@ function updateBadges(){
   const docs=dbGet('docs'),certs=dbGet('certs');
   setBadge('badge-docs',docs.filter(d=>countPending(d)>0).length);
   setBadge('badge-certs',certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=30;}).length);
-  setBadge('badge-saida',_clientStatusCache.filter(c=>c.situacao==='INATIVO'||c.situacao==='BAIXADA').length);
   setBadge('badge-susp',_clientStatusCache.filter(c=>c.situacao==='SUSPENSO').length);
 }
 function setBadge(id,n){const el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n;el.style.display='';}else el.style.display='none';}
@@ -1452,11 +1450,12 @@ function confirmarTodosDisparos(){
 
 // ==================== MÓDULO 4: SAÍDA (somente leitura, via SharePoint) ====================
 function renderSaidaTable(){
-  const search=document.getElementById('saida-search').value.toLowerCase(),divF=document.getElementById('saida-filter-div').value;
+  const search=document.getElementById('saida-search').value.toLowerCase(),divF=document.getElementById('saida-filter-div').value,sitF=document.getElementById('saida-filter-situacao')?.value||'';
   let data=_clientStatusCache.filter(c=>c.situacao==='INATIVO'||c.situacao==='BAIXADA');
   if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
   if(divF)data=data.filter(c=>c.divisao===divF);
-  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR'));
+  if(sitF)data=data.filter(c=>c.situacao===sitF);
+  data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
   const tbody=document.getElementById('saida-table-body'),empty=document.getElementById('saida-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
@@ -1469,7 +1468,7 @@ function renderSuspTable(){
   let data=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO');
   if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
   if(divF)data=data.filter(c=>c.divisao===divF);
-  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR'));
+  data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
   const tbody=document.getElementById('susp-table-body'),empty=document.getElementById('susp-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
