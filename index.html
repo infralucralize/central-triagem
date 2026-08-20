@@ -492,7 +492,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
           </select>
         </div>
       </div>
-      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Cancelamento de Clientes / Cancelamento e Suspenso de Clientes). Mostra apenas clientes com término de contrato a partir de hoje e documentação ainda não enviada. Marcar o checkbox grava direto no SharePoint.</div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Cancelamento de Clientes / Cancelamento e Suspenso de Clientes). Mostra apenas clientes com término de contrato a partir de hoje e com Documentação Enviada/Recebida marcada como "Não". Marcar o checkbox grava direto no SharePoint.</div>
       <div class="card">
         <div class="card-body">
           <div class="table-wrap">
@@ -960,7 +960,7 @@ async function spFetchSaidaClientes(){
         (resp.value||[]).forEach(item=>{
           const f=item.fields||{};
           const docStatus=(f[cfg.fields.docCampo]||'').toString().trim();
-          if(docStatus==='Sim')return;
+          if(docStatus!=='Não')return;
           const terminoIso=spDateToLocal(f[cfg.fields.terminoContrato]);
           if(!terminoIso||terminoIso<hojeStr)return;
           const lookupId=f[cfg.fields.razaoLookupId]?f[cfg.fields.razaoLookupId].toString():null;
