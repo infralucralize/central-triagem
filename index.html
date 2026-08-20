@@ -963,11 +963,13 @@ async function gateCheckSession(){
     }
   }catch(e){/* mantém a tela de login visível */}
 }
-async function spGraph(method,path,body){
+async function spGraph(method,path,body,extraHeaders){
+  const headers={'Authorization':`Bearer ${_spToken}`,'Content-Type':'application/json'};
+  if(extraHeaders)Object.assign(headers,extraHeaders);
   const res=await fetch(`https://graph.microsoft.com/v1.0${path}`,{
     method,
-    headers:{'Authorization':`Bearer ${_spToken}`,'Content-Type':'application/json'},
-    body:body?JSON.stringify(body):undefined
+    headers,
+    body:(method!=='GET'&&method!=='HEAD'&&body)?JSON.stringify(body):undefined
   });
   if(!res.ok){const t=await res.text();throw new Error(`Graph ${method} ${path} -> ${res.status}: ${t}`);}
   if(res.status===204)return null;
@@ -1006,7 +1008,7 @@ async function spFetchClientStatuses(){
       let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
       while(url&&guard<200){
         guard++;
-        const resp=await spGraph('GET',url,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
+        const resp=await spGraph('GET',url,null,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
         (resp.value||[]).forEach(item=>{
           const f=item.fields||{};
           const cnpj=f[cfg.fields.cnpj];
