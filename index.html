@@ -308,9 +308,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
       <span class="icon">🔐</span> Certificados / eCac
       <span class="nav-badge" id="badge-certs" style="display:none"></span>
     </div>
-    <div class="nav-item" onclick="goTo('cofre')" id="nav-cofre">
-      <span class="icon">🗄️</span> Cofre de Certificados
-    </div>
     <div class="nav-item" onclick="goTo('saida')" id="nav-saida">
       <span class="icon">🚪</span> Saída de Clientes
       <span class="nav-badge" id="badge-saida" style="display:none"></span>
@@ -319,19 +316,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
       <span class="icon">⏸️</span> Clientes Suspensos
       <span class="nav-badge" id="badge-susp" style="display:none"></span>
     </div>
-    <div class="nav-section">Sistema</div>
-    <div class="nav-item" onclick="goTo('config')" id="nav-config">
-      <span class="icon">⚙️</span> Configurações
-    </div>
   </nav>
-  <div id="sidebar-footer">
-    <div class="footer-version">Triagem v2.0</div>
-    <div id="sidebar-date"></div>
-    <div id="autosave-bar" onclick="connectFile()" title="Clique para ativar o salvamento automático no arquivo HTML">
-      <span id="autosave-ind">⚠️</span>
-      <span id="autosave-label">Clique para ativar salvamento</span>
-    </div>
-  </div>
 </nav>
 
 <!-- MAIN -->
@@ -458,7 +443,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <div onclick="exportarProcImagem();toggleCertMenu()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='#fff'">📷 <span><strong>Imagem PNG</strong> <span style="color:var(--gray-400);font-size:11px;">— procurações</span></span></div>
           </div>
         </div>
-        <button class="btn btn-outline" style="margin-left:8px;" onclick="spSyncCertsPull()">🔗 Sincronizar SharePoint</button>
         <button class="btn btn-primary" style="margin-left:8px;" onclick="openCertModal()">+ Novo Certificado</button>
       </div>
       <div id="cert-alerts-container"></div>
@@ -494,62 +478,19 @@ tr.row-success:hover { background: #dcfce7 !important; }
       </div>
     </div>
 
-    <!-- ==================== MÓDULO 3: COFRE ==================== -->
-    <div class="page" id="page-cofre">
-      <div class="cofre-warning">⚠️ <span>Por segurança, as <strong>senhas nunca são exibidas</strong> nesta tela. Anote a senha em local seguro ao cadastrar.</span></div>
-      <div id="cofre-pendencias-banner"></div>
-      <div class="flex-between mb-16">
-        <div class="search-bar" style="flex:1;margin-bottom:0;">
-          <input type="text" class="form-control" id="cofre-search" placeholder="Buscar por CNPJ ou Razão Social..." oninput="renderCofreTable()">
-          <select class="form-control" style="width:160px;" id="cofre-filter-div" onchange="renderCofreTable()">
-            <option value="">Todas as divisões</option>
-            <option>Contabilidade</option>
-            <option>Tech</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" style="margin-left:8px;" onclick="openCofreModal()">+ Cadastrar Certificado</button>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>CNPJ</th>
-                  <th>Razão Social</th>
-                  <th>Divisão</th>
-                  <th>Tipo</th>
-                  <th>Vencimento</th>
-                  <th>Certificadora</th>
-                  <th>Senha</th>
-                  <th>Link Arquivo</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="cofre-table-body"></tbody>
-            </table>
-          </div>
-          <div class="empty-state" id="cofre-empty" style="display:none;">
-            <div class="icon">🗄️</div>
-            <p>Cofre vazio. Cadastre o primeiro certificado.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ==================== MÓDULO 4: SAÍDA ==================== -->
     <div class="page" id="page-saida">
       <div class="flex-between mb-16">
         <div class="search-bar" style="flex:1;margin-bottom:0;">
           <input type="text" class="form-control" id="saida-search" placeholder="Buscar por CNPJ ou Razão Social..." oninput="renderSaidaTable()">
-          <select class="form-control" style="width:160px;" id="saida-filter-status" onchange="renderSaidaTable()">
-            <option value="">Todos os status</option>
-            <option value="Pendente">Envio Pendente</option>
-            <option value="Sim">Enviados</option>
+          <select class="form-control" style="width:180px;" id="saida-filter-div" onchange="renderSaidaTable()">
+            <option value="">Todas as divisões</option>
+            <option>Contabilidade</option>
+            <option>Tech</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="margin-left:8px;" onclick="openSaidaModal()">+ Registrar Saída</button>
       </div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Controle de Clientes / Base de Usuários) — somente leitura.</div>
       <div class="card">
         <div class="card-body">
           <div class="table-wrap">
@@ -559,12 +500,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
                   <th>CNPJ</th>
                   <th>Razão Social</th>
                   <th>Divisão</th>
-                  <th>Data Saída</th>
-                  <th>Competência Final</th>
-                  <th>Comp. Envio Docs</th>
-                  <th>Docs Enviados</th>
-                  <th>Data Envio</th>
-                  <th></th>
+                  <th>Situação</th>
                 </tr>
               </thead>
               <tbody id="saida-table-body"></tbody>
@@ -572,7 +508,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
           </div>
           <div class="empty-state" id="saida-empty" style="display:none;">
             <div class="icon">🚪</div>
-            <p>Nenhuma saída registrada.</p>
+            <p>Nenhum cliente com saída registrada.</p>
           </div>
         </div>
       </div>
@@ -583,25 +519,14 @@ tr.row-success:hover { background: #dcfce7 !important; }
       <div class="flex-between mb-16">
         <div class="search-bar" style="flex:1;margin-bottom:0;">
           <input type="text" class="form-control" id="susp-search" placeholder="Buscar por CNPJ ou Razão Social..." oninput="renderSuspTable()">
-          <select class="form-control" style="width:160px;" id="susp-filter-status" onchange="renderSuspTable()">
-            <option value="">Todos os status</option>
-            <option value="Suspenso">Suspenso</option>
-            <option value="Reativado">Reativado</option>
-            <option value="Encerrado">Encerrado</option>
+          <select class="form-control" style="width:180px;" id="susp-filter-div" onchange="renderSuspTable()">
+            <option value="">Todas as divisões</option>
+            <option>Contabilidade</option>
+            <option>Tech</option>
           </select>
         </div>
-        <div style="position:relative;margin-left:8px;" id="susp-export-wrap">
-          <button class="btn btn-outline" onclick="toggleSuspMenu()">⬇️ Extrair ▾</button>
-          <div id="susp-export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--gray-200);border-radius:8px;box-shadow:var(--shadow-md);z-index:200;min-width:210px;overflow:hidden;">
-            <div onclick="exportarSuspensosPDF();toggleSuspMenu()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='#fff'">📄 <span><strong>PDF</strong> <span style="color:var(--gray-400);font-size:11px;">— relatório para impressão</span></span></div>
-            <div style="height:1px;background:var(--gray-100);"></div>
-            <div onclick="exportarSuspensosExcel();toggleSuspMenu()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='#fff'">📊 <span><strong>Excel / CSV</strong> <span style="color:var(--gray-400);font-size:11px;">— para editar</span></span></div>
-            <div style="height:1px;background:var(--gray-100);"></div>
-            <div onclick="exportarSuspensosImagem();toggleSuspMenu()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='#fff'">📷 <span><strong>Imagem PNG</strong> <span style="color:var(--gray-400);font-size:11px;">— para compartilhar</span></span></div>
-          </div>
-        </div>
-        <button class="btn btn-primary" style="margin-left:8px;" onclick="openSuspModal()">+ Novo Suspenso</button>
       </div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Controle de Clientes / Base de Usuários) — somente leitura.</div>
       <div class="card">
         <div class="card-body">
           <div class="table-wrap">
@@ -611,10 +536,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
                   <th>CNPJ</th>
                   <th>Razão Social</th>
                   <th>Divisão</th>
-                  <th>Data Suspensão</th>
-                  <th>Status Débito</th>
-                  <th>Status</th>
-                  <th></th>
+                  <th>Situação</th>
                 </tr>
               </thead>
               <tbody id="susp-table-body"></tbody>
@@ -623,70 +545,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
           <div class="empty-state" id="susp-empty" style="display:none;">
             <div class="icon">⏸️</div>
             <p>Nenhum cliente suspenso.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== CONFIGURAÇÕES ==================== -->
-    <div class="page" id="page-config">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header"><h3>🔑 Senha do Portal da Certificadora</h3></div>
-          <div class="card-body">
-            <p class="text-sm text-gray" style="margin-bottom:14px;">Esta senha é usada para acessar o portal interno e gerada no link compartilhado com a certificadora.</p>
-            <div class="form-group">
-              <label>Senha atual</label>
-              <input type="password" class="form-control" id="config-senha-atual" placeholder="Digite a senha atual">
-            </div>
-            <div class="form-group">
-              <label>Nova senha</label>
-              <input type="password" class="form-control" id="config-senha-nova" placeholder="Mínimo 6 caracteres">
-            </div>
-            <div class="form-group">
-              <label>Confirmar nova senha</label>
-              <input type="password" class="form-control" id="config-senha-conf" placeholder="Repita a nova senha">
-            </div>
-            <div class="flex-end">
-              <button class="btn btn-primary" onclick="alterarSenha()">💾 Alterar senha</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>🗄️ Backup de dados</h3></div>
-          <div class="card-body">
-            <p class="text-sm text-gray" style="margin-bottom:14px;">Exporte todos os dados do sistema ou importe um backup anterior.</p>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <button class="btn btn-outline" onclick="exportarBackup()">⬇️ Exportar backup completo</button>
-              <button class="btn btn-outline" onclick="document.getElementById('import-backup-input').click()">⬆️ Importar backup</button>
-              <input type="file" id="import-backup-input" accept=".json" style="display:none;" onchange="importarBackup(this)">
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>🖼️ Logo da empresa</h3></div>
-          <div class="card-body">
-            <div id="logo-preview-wrap" style="margin-bottom:12px;text-align:center;display:none;">
-              <img id="logo-preview" style="max-height:64px;max-width:200px;object-fit:contain;border-radius:6px;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <button class="btn btn-outline" onclick="document.getElementById('logo-input').click()">📁 Carregar logo</button>
-              <input type="file" id="logo-input" accept="image/*" style="display:none;" onchange="carregarLogo(this)">
-              <button class="btn btn-outline" onclick="removerLogo()" style="color:var(--danger);">🗑 Remover logo</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>ℹ️ Sobre o sistema</h3></div>
-          <div class="card-body">
-            <div style="font-size:13px;line-height:1.8;color:var(--gray-700);">
-              <div><strong>Central de Triagem Lucralize</strong> v1.0</div>
-              <div class="text-gray">Todos os dados são salvos localmente neste navegador.</div>
-              <div class="divider"></div>
-              <div>Senha do portal: <span id="config-senha-preview">••••••••</span>
-                <button class="btn btn-outline btn-sm" style="margin-left:8px;" onclick="toggleSenhaPreview()">👁</button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -892,133 +750,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
   </div>
 </div>
 
-<!-- ==================== MODAL: COFRE ==================== -->
-<div class="modal-overlay" id="modal-cofre">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-cofre-title">Cadastrar no Cofre</h3>
-      <button class="modal-close" onclick="closeModal('modal-cofre')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="alert alert-warning">🔒 A senha será armazenada localmente neste dispositivo. Não compartilhe este arquivo.</div>
-      <div class="form-row">
-        <div class="form-group"><label class="required">CNPJ</label>
-          <input type="text" class="form-control" id="cf-cnpj" maxlength="18" oninput="maskCNPJ(this)" placeholder="00.000.000/0000-00"></div>
-        <div class="form-group"><label class="required">Divisão</label>
-          <select class="form-control" id="cf-divisao"><option>Contabilidade</option><option>Tech</option></select></div>
-      </div>
-      <div class="form-group"><label class="required">Razão Social</label>
-        <input type="text" class="form-control" id="cf-razao"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Tipo</label>
-          <select class="form-control" id="cf-tipo"><option>A1</option><option>A3</option></select></div>
-        <div class="form-group"><label class="required">Data de Vencimento</label>
-          <input type="date" class="form-control" id="cf-vencimento"></div>
-      </div>
-      <div class="form-group"><label class="required">Senha do Certificado</label>
-        <input type="password" class="form-control" id="cf-senha" placeholder="Digite a senha..."></div>
-      <div class="form-group"><label>Link do Arquivo (OneDrive/SharePoint)</label>
-        <input type="text" class="form-control" id="cf-link" placeholder="https://..."></div>
-      <div class="form-group"><label>Certificadora</label>
-        <input type="text" class="form-control" id="cf-certificadora"></div>
-      <div class="form-group"><label>Observações</label>
-        <textarea class="form-control" id="cf-obs"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-cofre')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveCofre()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== MODAL: SAÍDA ==================== -->
-<div class="modal-overlay" id="modal-saida">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-saida-title">Registrar Saída de Cliente</h3>
-      <button class="modal-close" onclick="closeModal('modal-saida')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label class="required">CNPJ</label>
-          <input type="text" class="form-control" id="s-cnpj" maxlength="18" oninput="maskCNPJ(this)" placeholder="00.000.000/0000-00"></div>
-        <div class="form-group"><label class="required">Divisão</label>
-          <select class="form-control" id="s-divisao"><option>Contabilidade</option><option>Tech</option></select></div>
-      </div>
-      <div class="form-group"><label class="required">Razão Social</label>
-        <input type="text" class="form-control" id="s-razao"></div>
-      <div class="form-row">
-        <div class="form-group"><label class="required">Data de Saída</label>
-          <input type="date" class="form-control" id="s-data-saida"></div>
-        <div class="form-group"><label class="required">Competência Final (MM/AAAA)</label>
-          <input type="text" class="form-control" id="s-comp-final" placeholder="05/2026" maxlength="7" oninput="calcCompEnvio()"></div>
-      </div>
-      <div class="form-group">
-        <label>Competência de Envio de Documentos</label>
-        <input type="text" class="form-control" id="s-comp-envio" readonly style="background:var(--gray-50);color:var(--gray-500);">
-      </div>
-      <div class="form-group"><label>Motivo da Saída</label>
-        <textarea class="form-control" id="s-motivo"></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label>Data Envio Documentos</label>
-          <input type="date" class="form-control" id="s-data-envio"></div>
-        <div class="form-group"><label>E-mail para Envio</label>
-          <input type="email" class="form-control" id="s-email-envio" placeholder="cliente@email.com"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Documentos Enviados</label>
-          <select class="form-control" id="s-docs-enviados"><option>Pendente</option><option>Sim</option></select></div>
-        <div class="form-group"><label>Enviado Por</label>
-          <input type="text" class="form-control" id="s-enviado-por"></div>
-      </div>
-      <div class="form-group"><label>Observações</label>
-        <textarea class="form-control" id="s-obs"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-saida')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveSaida()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== MODAL: SUSPENSOS ==================== -->
-<div class="modal-overlay" id="modal-susp">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-susp-title">Cliente Suspenso</h3>
-      <button class="modal-close" onclick="closeModal('modal-susp')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label class="required">CNPJ</label>
-          <input type="text" class="form-control" id="su-cnpj" maxlength="18" oninput="maskCNPJ(this)" placeholder="00.000.000/0000-00"></div>
-        <div class="form-group"><label class="required">Divisão</label>
-          <select class="form-control" id="su-divisao"><option>Contabilidade</option><option>Tech</option></select></div>
-      </div>
-      <div class="form-group"><label class="required">Razão Social</label>
-        <input type="text" class="form-control" id="su-razao"></div>
-      <div class="form-row">
-        <div class="form-group"><label class="required">Data de Suspensão</label>
-          <input type="date" class="form-control" id="su-data-susp"></div>
-        <div class="form-group"><label>Status</label>
-          <select class="form-control" id="su-status"><option>Suspenso</option><option>Reativado</option><option>Encerrado</option></select></div>
-      </div>
-      <div class="form-group"><label>Status do Débito</label>
-        <select class="form-control" id="su-debito"><option>Pendente</option><option>Negociando</option><option>Quitado</option></select></div>
-      <div class="form-group"><label>Detalhes do Contato com Financeiro</label>
-        <textarea class="form-control" id="su-detalhes-fin" placeholder="Histórico acumulativo de contatos..."></textarea></div>
-      <div class="form-group"><label>Data de Reativação</label>
-        <input type="date" class="form-control" id="su-data-reat"></div>
-      <div class="form-group"><label>Observações</label>
-        <textarea class="form-control" id="su-obs"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-susp')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveSusp()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL: DISPARO AUTOMÁTICO -->
 <div class="modal-overlay" id="modal-dispatch">
   <div class="modal" style="max-width:680px;">
@@ -1067,20 +798,6 @@ tr.row-success:hover { background: #dcfce7 !important; }
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-view-docs')">Fechar</button>
       <button class="btn btn-primary" id="btn-edit-docs" onclick="">✏️ Editar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: VISUALIZAR SENHA COFRE -->
-<div class="modal-overlay" id="modal-view-cofre">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>🔐 Acesso ao Cofre</h3>
-      <button class="modal-close" onclick="closeModal('modal-view-cofre');clearCofreView()">✕</button>
-    </div>
-    <div class="modal-body" id="modal-view-cofre-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-view-cofre');clearCofreView()">Fechar</button>
     </div>
   </div>
 </div>
@@ -1195,9 +912,13 @@ const SP_CONFIG={
     Contabilidade:{sitePath:null,listName:"Certificados"},
     Tech:{sitePath:"LUCRALIZETECH",listName:"Certificados"}
   },
-  fields:{cnpj:'field_1',razao:'field_2',email:'field_3',tipo:'field_4',vencimento:'field_5',procVenc:'field_6',temCertificado:'field_7',statusProcuracao:'field_8',codigoAcesso:'field_9'}
+  fields:{cnpj:'field_1',razao:'field_2',email:'field_3',tipo:'field_4',vencimento:'field_5',procVenc:'field_6',temCertificado:'field_7',statusProcuracao:'field_8',codigoAcesso:'field_9'},
+  masterLists:{
+    Contabilidade:{sitePath:null,listName:"Controle de Clientes",fields:{title:'Title',cnpj:'CNPJ_x002f_CPF_x002f_CEI',situacao:'Situa_x00e7__x00e3_o',grupo:'GrupoEmpresarial'}},
+    Tech:{sitePath:"LUCRALIZETECH",listName:"Base de Usuários",fields:{title:'Title',cnpj:'field_3',situacao:'Situa_x00e7__x00e3_o'}}
+  }
 };
-let _spMsal=null,_spToken=null,_spSiteIds={},_spListIds={};
+let _spMsal=null,_spToken=null,_spSiteIds={},_spListIds={},_spMasterSiteIds={},_spMasterListIds={},_clientStatusCache=[];
 
 function _spSetStatus(txt){const el=document.getElementById('sp-sync-status');if(el)el.textContent=txt;}
 
@@ -1223,6 +944,7 @@ async function gateLogin(){
     const result=await _spMsal.loginPopup({scopes:["User.Read","Sites.ReadWrite.All"]});
     _spToken=result.accessToken;
     document.getElementById('login-gate').style.display='none';
+    spSyncCertsPull();spFetchClientStatuses();
   }catch(e){
     console.error(e);
     if(status)status.textContent='Erro no login: '+e.message;
@@ -1237,6 +959,7 @@ async function gateCheckSession(){
       const result=await _spMsal.acquireTokenSilent({scopes:["User.Read","Sites.ReadWrite.All"],account:accounts[0]});
       _spToken=result.accessToken;
       document.getElementById('login-gate').style.display='none';
+      spSyncCertsPull();spFetchClientStatuses();
     }
   }catch(e){/* mantém a tela de login visível */}
 }
@@ -1260,6 +983,50 @@ async function spResolveSite(divisao){
   if(!list)throw new Error('Lista não encontrada: '+cfg.listName+' em '+divisao);
   _spSiteIds[divisao]=site.id;_spListIds[divisao]=list.id;
   return{siteId:site.id,listId:list.id};
+}
+async function spResolveMasterList(divisao){
+  if(_spMasterListIds[divisao])return{siteId:_spMasterSiteIds[divisao],listId:_spMasterListIds[divisao]};
+  const cfg=SP_CONFIG.masterLists[divisao];if(!cfg)throw new Error('Divisão sem lista mestra: '+divisao);
+  const sitePathSuffix=cfg.sitePath?`:/sites/${cfg.sitePath}`:'';
+  const site=await spGraph('GET',`/sites/${SP_CONFIG.hostname}${sitePathSuffix}`);
+  const lists=await spGraph('GET',`/sites/${site.id}/lists?$select=id,name,displayName`);
+  const list=lists.value.find(l=>l.displayName===cfg.listName||l.name===cfg.listName);
+  if(!list)throw new Error('Lista mestra não encontrada: '+cfg.listName+' em '+divisao);
+  _spMasterSiteIds[divisao]=site.id;_spMasterListIds[divisao]=list.id;
+  return{siteId:site.id,listId:list.id};
+}
+function _cleanUpper(s){return(s||'').toString().trim().toUpperCase();}
+async function spFetchClientStatuses(){
+  try{
+    if(!_spToken)return;
+    const all=[];
+    for(const divisao of Object.keys(SP_CONFIG.masterLists)){
+      const cfg=SP_CONFIG.masterLists[divisao];
+      const{siteId,listId}=await spResolveMasterList(divisao);
+      let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`,guard=0;
+      while(url&&guard<200){
+        guard++;
+        const resp=await spGraph('GET',url,{'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'});
+        (resp.value||[]).forEach(item=>{
+          const f=item.fields||{};
+          const cnpj=f[cfg.fields.cnpj];
+          if(!cnpj)return;
+          all.push({
+            cnpj:cnpj.toString(),
+            razaoSocial:f[cfg.fields.title]||'',
+            divisao,
+            situacao:_cleanUpper(f[cfg.fields.situacao]),
+            grupo:cfg.fields.grupo?(f[cfg.fields.grupo]||''):''
+          });
+        });
+        url=resp['@odata.nextLink']?resp['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0',''):null;
+      }
+    }
+    _clientStatusCache=all;
+    renderSaidaTable();renderSuspTable();updateBadges();
+  }catch(e){
+    console.error('Erro ao buscar status de clientes:',e);
+  }
 }
 function spDateToLocal(iso){if(!iso)return'';return iso.split('T')[0];}
 function spDateFromLocal(d){if(!d)return null;return d+'T03:00:00Z';}
@@ -1411,13 +1178,9 @@ function dbSave(k,item){
 }
 function dbDelete(k,id){dbSet(k,dbGet(k).filter(i=>i.id!==id));}
 
-// ==================== PORTAL SENHA ====================
-const PORTAL_SENHA_KEY='portal_senha';
-function getSenhaPortal(){return localStorage.getItem(PORTAL_SENHA_KEY)||'lucralize2024';}
-
 // ==================== NAVIGATION ====================
-const pages={painel:'Painel Geral',documentos:'Recebimento de Documentos',certificados:'Certificados / eCac',cofre:'Cofre de Certificados',saida:'Saída de Clientes',suspensos:'Clientes Suspensos',config:'Configurações'};
-const subtitles={painel:'Visão consolidada de todas as pendências',documentos:'Checklist de recebimento por cliente',certificados:'Controle de vencimentos e alertas',cofre:'Senhas protegidas — acesso restrito',saida:'Clientes que encerraram contrato',suspensos:'Contratos suspensos e acompanhamento',config:'Senha, exportação e backup',portal:'Acesso restrito — certificados próximos do vencimento'};
+const pages={painel:'Painel Geral',documentos:'Recebimento de Documentos',certificados:'Certificados / eCac',saida:'Saída de Clientes',suspensos:'Clientes Suspensos'};
+const subtitles={painel:'Visão consolidada de todas as pendências',documentos:'Checklist de recebimento por cliente',certificados:'Controle de vencimentos e alertas',saida:'Clientes que encerraram contrato',suspensos:'Contratos suspensos e acompanhamento'};
 let currentPage='painel', currentEditId=null, alertaCertId=null, alertaTipo=null;
 
 function goTo(page) {
@@ -1430,10 +1193,9 @@ function goTo(page) {
   document.getElementById('page-title').textContent=pages[page]||page;
   document.getElementById('page-subtitle').textContent=subtitles[page]||'';
   currentPage=page;
-  const fns={painel:renderPainel,documentos:renderDocsTable,certificados:renderCertsTable,cofre:renderCofreTable,saida:renderSaidaTable,suspensos:renderSuspTable};
+  const fns={painel:renderPainel,documentos:renderDocsTable,certificados:renderCertsTable,saida:renderSaidaTable,suspensos:renderSuspTable};
   if(fns[page]) fns[page]();
   if(page==='certificados') setTimeout(verificarDispatchAutomatico,400);
-  if(page==='config'){const el=document.getElementById('config-senha-preview');if(el)el.textContent='••••••••';}
 }
 
 // ==================== MODAL ====================
@@ -1446,11 +1208,11 @@ function countPending(d){
   return ['contratoSocial','alteracoes','docsSocios','certDigital','senhaPref','senhaPortal','senhaEstado','docsContabeis','folha','fichasFinanceiras','fichasRegistro','senhaEsocial'].filter(f=>d[f]==='Pendente').length;
 }
 function updateBadges(){
-  const docs=dbGet('docs'),certs=dbGet('certs'),saidas=dbGet('saida'),susps=dbGet('susp');
+  const docs=dbGet('docs'),certs=dbGet('certs');
   setBadge('badge-docs',docs.filter(d=>countPending(d)>0).length);
   setBadge('badge-certs',certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=30;}).length);
-  setBadge('badge-saida',saidas.filter(s=>s.docsEnviados==='Pendente').length);
-  setBadge('badge-susp',susps.filter(s=>s.status==='Suspenso').length);
+  setBadge('badge-saida',_clientStatusCache.filter(c=>c.situacao==='INATIVO'||c.situacao==='BAIXADA').length);
+  setBadge('badge-susp',_clientStatusCache.filter(c=>c.situacao==='SUSPENSO').length);
 }
 function setBadge(id,n){const el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n;el.style.display='';}else el.style.display='none';}
 
@@ -1567,14 +1329,8 @@ function saveCert(){
   const item={id:currentEditId||null,tipoDocumento:tipoDoc,cnpj,razaoSocial:razao,divisao:document.getElementById('c-divisao').value,emailResponsavel:document.getElementById('c-email').value.trim(),whatsappResponsavel:document.getElementById('c-whatsapp').value.replace(/\D/g,''),nomeResponsavel:document.getElementById('c-responsavel').value.trim(),tipo:document.getElementById('c-tipo').value,vencimento:venc,procVenc:document.getElementById('c-proc-venc').value,temCertificado:document.getElementById('c-tem-cert').value,statusProcuracao:document.getElementById('c-status-proc').value,codigoAcesso:document.getElementById('c-codigo-acesso').value,alerta30:document.getElementById('c-alerta30').value,alerta15:document.getElementById('c-alerta15').value,obs:document.getElementById('c-obs').value};
   if(currentEditId){const existing=dbGet('certs').find(x=>x.id===currentEditId);if(existing){item._spItemId=existing._spItemId;item._spSite=existing._spSite;}}
   const saved=dbSave('certs',item);
-  sincronizarCofre(saved);
   spPushCert(saved);
-  closeModal('modal-cert');renderCertsTable();updateBadges();toast(currentEditId?'Certificado atualizado e cofre sincronizado!':'Certificado cadastrado e adicionado ao cofre!');
-}
-function sincronizarCofre(cert){
-  const cofre=dbGet('cofre'),idx=cofre.findIndex(c=>c.cnpj===cert.cnpj&&c.divisao===cert.divisao);
-  if(idx>=0){const e=cofre[idx];cofre[idx]={...e,razaoSocial:cert.razaoSocial,tipo:cert.tipo,vencimento:cert.vencimento,senha:e.senha||'',link:e.link||'',senhaPendente:!e.senha,linkPendente:!e.link,origemCerts:true};dbSet('cofre',cofre);}
-  else{const n={id:uuid(),criadoEm:today(),cnpj:cert.cnpj,razaoSocial:cert.razaoSocial,divisao:cert.divisao,tipo:cert.tipo,vencimento:cert.vencimento,senha:'',link:'',senhaPendente:true,linkPendente:true,cadastradoPor:'Auto — Módulo Certificados',dataCadastro:today(),obs:cert.obs||'',origemCerts:true};cofre.push(n);dbSet('cofre',cofre);}
+  closeModal('modal-cert');renderCertsTable();updateBadges();toast(currentEditId?'Certificado atualizado!':'Certificado cadastrado!');
 }
 function renderCertsTable(){
   const search=document.getElementById('cert-search').value.toLowerCase();
@@ -1685,556 +1441,30 @@ function confirmarTodosDisparos(){
   dbSet('certs',certs);closeModal('modal-dispatch');toast(`Envio confirmado para ${disparosPendentes.length} cliente(s). Próximo em 2 dias.`);disparosPendentes=[];renderCertsTable();
 }
 
-// ==================== MÓDULO 3: COFRE ====================
-function openCofreModal(id=null){
-  currentEditId=id;
-  document.getElementById('modal-cofre-title').textContent=id?'Editar Registro do Cofre':'Cadastrar no Cofre';
-  const map={'cf-cnpj':'cnpj','cf-divisao':'divisao','cf-razao':'razaoSocial','cf-tipo':'tipo','cf-vencimento':'vencimento','cf-senha':'senha','cf-link':'link','cf-certificadora':'certificadora','cf-obs':'obs'};
-  if(id){const item=dbGet('cofre').find(i=>i.id===id);if(item)Object.entries(map).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el&&item[k]!==undefined)el.value=item[k];});}
-  else Object.keys(map).forEach(elId=>{const el=document.getElementById(elId);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
-  openModal('modal-cofre');
-}
-function saveCofre(){
-  const cnpj=document.getElementById('cf-cnpj').value.trim(),razao=document.getElementById('cf-razao').value.trim();
-  if(!cnpj||!razao){toast('CNPJ e Razão Social são obrigatórios.','error');return;}
-  const item={id:currentEditId||null,cnpj,razaoSocial:razao,divisao:document.getElementById('cf-divisao').value,tipo:document.getElementById('cf-tipo').value,vencimento:document.getElementById('cf-vencimento').value,senha:document.getElementById('cf-senha').value,link:document.getElementById('cf-link').value,certificadora:document.getElementById('cf-certificadora').value,obs:document.getElementById('cf-obs').value,cadastradoPor:'Usuário Local',dataCadastro:today(),senhaPendente:!document.getElementById('cf-senha').value,linkPendente:!document.getElementById('cf-link').value};
-  dbSave('cofre',item);closeModal('modal-cofre');renderCofreTable();toast(currentEditId?'Registro atualizado!':'Certificado cadastrado no cofre!');
-}
-function renderCofreTable(){
-  const search=document.getElementById('cofre-search').value.toLowerCase(),divF=document.getElementById('cofre-filter-div').value;
-  let data=dbGet('cofre');
-  if(search)data=data.filter(c=>c.cnpj.includes(search)||c.razaoSocial.toLowerCase().includes(search));
-  if(divF)data=data.filter(c=>c.divisao===divF);
-  const pS=data.filter(c=>!c.senha).length,pL=data.filter(c=>!c.link).length;
-  const banner=document.getElementById('cofre-pendencias-banner');
-  if(banner)banner.innerHTML=(pS>0||pL>0)?`<div class="alert alert-warning" style="margin-bottom:12px;">📋 <strong>${pS}</strong> registro(s) com senha pendente &nbsp;·&nbsp; <strong>${pL}</strong> com link pendente. Clique em ✏️ para completar.</div>`:'';
-  const tbody=document.getElementById('cofre-table-body'),empty=document.getElementById('cofre-empty');
-  if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
-  empty.style.display='none';
-  function vb(iso){if(!iso)return'<span class="badge badge-gray">—</span>';const d=daysDiff(iso);if(d<0)return`<span class="badge badge-gray">Vencido</span>`;if(d<=15)return`<span class="badge badge-danger">🔴 ${fmtDate(iso)}</span>`;if(d<=30)return`<span class="badge badge-warning">🟡 ${fmtDate(iso)}</span>`;return`<span class="badge badge-success">${fmtDate(iso)}</span>`;}
-  tbody.innerHTML=data.map(c=>`<tr><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-gray">${c.tipo||'—'}</span></td><td>${vb(c.vencimento)}</td><td style="font-size:12px;">${c.certificadora||'—'}</td><td>${!c.senha?'<span class="badge badge-warning">⚠️ Pendente</span>':`<button class="btn btn-outline btn-sm" onclick="viewSenha('${c.id}')">🔑 Ver</button>`}</td><td>${c.link?`<a href="${c.link}" target="_blank" style="font-size:12px;">📁 Abrir</a>`:'<span class="badge badge-warning">⚠️ Pendente</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="openCofreModal('${c.id}')">✏️</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteItem('cofre','${c.id}',renderCofreTable)">🗑</button></td></tr>`).join('');
-}
-let senhaVisible=false;
-function viewSenha(id){
-  const c=dbGet('cofre').find(i=>i.id===id);if(!c)return;senhaVisible=false;
-  document.getElementById('modal-view-cofre-body').innerHTML=`<div class="alert alert-warning">⚠️ Acesse apenas em ambiente seguro.</div><div style="display:grid;gap:10px;"><div class="flex-between"><span class="text-gray text-sm">Empresa</span><strong>${c.razaoSocial}</strong></div><div class="flex-between"><span class="text-gray text-sm">CNPJ</span><code>${c.cnpj}</code></div><div class="flex-between"><span class="text-gray text-sm">Tipo</span>${c.tipo}</div><div class="flex-between"><span class="text-gray text-sm">Vencimento</span>${fmtDate(c.vencimento)}</div><div class="flex-between"><span class="text-gray text-sm">Certificadora</span>${c.certificadora||'—'}</div><div class="flex-between"><span class="text-gray text-sm">Arquivo</span>${c.link?`<a href="${c.link}" target="_blank">📁 Abrir</a>`:'—'}</div><div class="divider"></div><div><span class="text-gray text-sm">Senha</span><div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><input type="password" id="senha-display" value="${c.senha||''}" readonly style="flex:1;font-family:monospace;font-size:14px;padding:8px 10px;border:1px solid var(--gray-300);border-radius:6px;background:var(--gray-50);"><button class="btn btn-outline" onclick="toggleSenha()" id="btn-toggle-senha">👁 Mostrar</button></div></div></div>`;
-  openModal('modal-view-cofre');
-}
-function toggleSenha(){const inp=document.getElementById('senha-display'),btn=document.getElementById('btn-toggle-senha');if(!inp)return;senhaVisible=!senhaVisible;inp.type=senhaVisible?'text':'password';btn.textContent=senhaVisible?'🙈 Ocultar':'👁 Mostrar';}
-function clearCofreView(){document.getElementById('modal-view-cofre-body').innerHTML='';senhaVisible=false;}
-
-// ==================== MÓDULO 4: SAÍDA ====================
-function openSaidaModal(id=null){
-  currentEditId=id;
-  document.getElementById('modal-saida-title').textContent=id?'Editar Saída':'Registrar Saída de Cliente';
-  const map={'s-cnpj':'cnpj','s-divisao':'divisao','s-razao':'razaoSocial','s-data-saida':'dataSaida','s-comp-final':'compFinal','s-comp-envio':'compEnvio','s-motivo':'motivo','s-data-envio':'dataEnvio','s-email-envio':'emailEnvio','s-docs-enviados':'docsEnviados','s-enviado-por':'enviadoPor','s-obs':'obs'};
-  if(id){const item=dbGet('saida').find(i=>i.id===id);if(item)Object.entries(map).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el&&item[k]!==undefined)el.value=item[k];});}
-  else{Object.keys(map).forEach(elId=>{const el=document.getElementById(elId);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});document.getElementById('s-data-saida').value=today();}
-  openModal('modal-saida');
-}
-function saveSaida(){
-  const cnpj=document.getElementById('s-cnpj').value.trim(),razao=document.getElementById('s-razao').value.trim();
-  if(!cnpj||!razao){toast('CNPJ e Razão Social são obrigatórios.','error');return;}
-  const compFinal=document.getElementById('s-comp-final').value;
-  const item={id:currentEditId||null,cnpj,razaoSocial:razao,divisao:document.getElementById('s-divisao').value,dataSaida:document.getElementById('s-data-saida').value,compFinal,compEnvio:nextCompetencia(compFinal),motivo:document.getElementById('s-motivo').value,dataEnvio:document.getElementById('s-data-envio').value,emailEnvio:document.getElementById('s-email-envio').value,docsEnviados:document.getElementById('s-docs-enviados').value,enviadoPor:document.getElementById('s-enviado-por').value,obs:document.getElementById('s-obs').value};
-  dbSave('saida',item);closeModal('modal-saida');renderSaidaTable();updateBadges();toast(currentEditId?'Registro atualizado!':'Saída registrada!');
-}
+// ==================== MÓDULO 4: SAÍDA (somente leitura, via SharePoint) ====================
 function renderSaidaTable(){
-  const search=document.getElementById('saida-search').value.toLowerCase(),sf=document.getElementById('saida-filter-status').value;
-  let data=dbGet('saida');
-  if(search)data=data.filter(s=>s.cnpj.includes(search)||s.razaoSocial.toLowerCase().includes(search));
-  if(sf)data=data.filter(s=>s.docsEnviados===sf);
-  data.sort((a,b)=>a.docsEnviados==='Pendente'?-1:1);
+  const search=document.getElementById('saida-search').value.toLowerCase(),divF=document.getElementById('saida-filter-div').value;
+  let data=_clientStatusCache.filter(c=>c.situacao==='INATIVO'||c.situacao==='BAIXADA');
+  if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
+  if(divF)data=data.filter(c=>c.divisao===divF);
+  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR'));
   const tbody=document.getElementById('saida-table-body'),empty=document.getElementById('saida-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  tbody.innerHTML=data.map(s=>`<tr><td><code style="font-size:12px;">${s.cnpj}</code></td><td><strong>${s.razaoSocial}</strong></td><td><span class="badge ${s.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${s.divisao}</span></td><td>${fmtDate(s.dataSaida)}</td><td>${s.compFinal||'—'}</td><td>${s.compEnvio||'—'}</td><td>${s.docsEnviados==='Sim'?'<span class="badge badge-success">✅ Enviado</span>':'<span class="badge badge-danger">⏳ Pendente</span>'}</td><td style="font-size:12px;">${fmtDate(s.dataEnvio)}</td><td><button class="btn btn-outline btn-sm" onclick="openSaidaModal('${s.id}')">✏️</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteItem('saida','${s.id}',renderSaidaTable)">🗑</button></td></tr>`).join('');
+  tbody.innerHTML=data.map(c=>`<tr><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-gray">${c.situacao==='BAIXADA'?'Baixada':'Inativo'}</span></td></tr>`).join('');
 }
 
-// ==================== MÓDULO 5: SUSPENSOS ====================
-function openSuspModal(id=null){
-  currentEditId=id;
-  document.getElementById('modal-susp-title').textContent=id?'Editar Suspenso':'Registrar Cliente Suspenso';
-  const map={'su-cnpj':'cnpj','su-divisao':'divisao','su-razao':'razaoSocial','su-data-susp':'dataSusp','su-status':'status','su-debito':'debito','su-detalhes-fin':'detalhesContatoFin','su-data-reat':'dataReativacao','su-obs':'obs'};
-  if(id){const item=dbGet('susp').find(i=>i.id===id);if(item)Object.entries(map).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el&&item[k]!==undefined)el.value=item[k];});}
-  else{Object.keys(map).forEach(elId=>{const el=document.getElementById(elId);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});document.getElementById('su-data-susp').value=today();}
-  openModal('modal-susp');
-}
-function saveSusp(){
-  const cnpj=document.getElementById('su-cnpj').value.trim(),razao=document.getElementById('su-razao').value.trim();
-  if(!cnpj||!razao){toast('CNPJ e Razão Social são obrigatórios.','error');return;}
-  const item={id:currentEditId||null,cnpj,razaoSocial:razao,divisao:document.getElementById('su-divisao').value,dataSusp:document.getElementById('su-data-susp').value,status:document.getElementById('su-status').value,debito:document.getElementById('su-debito').value,detalhesContatoFin:document.getElementById('su-detalhes-fin').value,dataReativacao:document.getElementById('su-data-reat').value,obs:document.getElementById('su-obs').value};
-  dbSave('susp',item);closeModal('modal-susp');renderSuspTable();updateBadges();toast(currentEditId?'Registro atualizado!':'Suspenso registrado!');
-}
+// ==================== MÓDULO 5: SUSPENSOS (somente leitura, via SharePoint) ====================
 function renderSuspTable(){
-  const search=document.getElementById('susp-search').value.toLowerCase(),sf=document.getElementById('susp-filter-status').value;
-  let data=dbGet('susp');
-  if(search)data=data.filter(s=>s.cnpj.includes(search)||s.razaoSocial.toLowerCase().includes(search));
-  if(sf)data=data.filter(s=>s.status===sf);
-  data.sort((a,b)=>a.dataSusp<b.dataSusp?-1:1);
+  const search=document.getElementById('susp-search').value.toLowerCase(),divF=document.getElementById('susp-filter-div').value;
+  let data=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO');
+  if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
+  if(divF)data=data.filter(c=>c.divisao===divF);
+  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR'));
   const tbody=document.getElementById('susp-table-body'),empty=document.getElementById('susp-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  tbody.innerHTML=data.map(s=>{const rc=s.status==='Suspenso'&&s.debito==='Pendente'?'urgente-15':s.status==='Suspenso'&&s.debito==='Negociando'?'urgente-30':s.status==='Reativado'?'row-success':'';const sb=s.status==='Suspenso'?'<span class="badge badge-warning">Suspenso</span>':s.status==='Reativado'?'<span class="badge badge-success">Reativado</span>':'<span class="badge badge-gray">Encerrado</span>';const db=s.debito==='Quitado'?'<span class="badge badge-success">Quitado</span>':s.debito==='Negociando'?'<span class="badge badge-info">Negociando</span>':'<span class="badge badge-danger">Pendente</span>';return`<tr class="${rc}"><td><code style="font-size:12px;">${s.cnpj}</code></td><td><strong>${s.razaoSocial}</strong></td><td><span class="badge ${s.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${s.divisao}</span></td><td>${fmtDate(s.dataSusp)}</td><td>${db}</td><td>${sb}</td><td><button class="btn btn-outline btn-sm" onclick="openSuspModal('${s.id}')">✏️</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteItem('susp','${s.id}',renderSuspTable)">🗑</button></td></tr>`;}).join('');
-}
-
-// ==================== PORTAL INTERNO ====================// ==================== CONFIGURAÇÕES ====================
-function alterarSenha(){
-  const atual=document.getElementById('config-senha-atual').value,nova=document.getElementById('config-senha-nova').value,conf=document.getElementById('config-senha-conf').value;
-  if(atual!==getSenhaPortal()){toast('Senha atual incorreta.','error');return;}
-  if(nova.length<6){toast('Mínimo 6 caracteres.','error');return;}
-  if(nova!==conf){toast('As senhas não coincidem.','error');return;}
-  localStorage.setItem(PORTAL_SENHA_KEY,nova);
-  document.getElementById('config-senha-atual').value='';document.getElementById('config-senha-nova').value='';document.getElementById('config-senha-conf').value='';
-  toast('Senha alterada com sucesso!');
-}
-function toggleSenhaPreview(){const el=document.getElementById('config-senha-preview');if(el)el.textContent=el.textContent==='••••••••'?getSenhaPortal():'••••••••';}
-function exportarBackup(){localStorage.setItem('triagem_ultimo_backup',Date.now());
-  const b={tipo:'backup-triagem-lucralize',geradoEm:today(),docs:dbGet('docs'),certs:dbGet('certs'),cofre:dbGet('cofre'),saida:dbGet('saida'),susp:dbGet('susp')};
-  const blob=new Blob([JSON.stringify(b,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`backup-triagem-${today()}.json`;a.click();URL.revokeObjectURL(url);toast('Backup exportado!');
-}
-function importarBackup(input){
-  const file=input.files[0];if(!file)return;if(!confirm('Isso sobrescreverá TODOS os dados. Continuar?')){input.value='';return;}
-  const r=new FileReader();r.onload=e=>{try{const b=JSON.parse(e.target.result);if(b.tipo!=='backup-triagem-lucralize'){toast('Backup inválido.','error');return;}if(b.docs)dbSet('docs',b.docs);if(b.certs)dbSet('certs',b.certs);if(b.cofre)dbSet('cofre',b.cofre);if(b.saida)dbSet('saida',b.saida);if(b.susp)dbSet('susp',b.susp);renderPainel();updateBadges();toast('Backup importado!');input.value='';}catch{toast('Erro ao ler o backup.','error');}};r.readAsText(file);
-}
-
-// ==================== MENU EXTRAIR SUSPENSOS ====================
-function toggleSuspMenu() {
-  const m = document.getElementById('susp-export-menu');
-  m.style.display = m.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', e => {
-  const wrap = document.getElementById('susp-export-wrap');
-  if (wrap && !wrap.contains(e.target)) {
-    const m = document.getElementById('susp-export-menu');
-    if (m) m.style.display = 'none';
-  }
-});
-
-// ==================== EXPORTAR SUSPENSOS ====================
-function exportarSuspensos() {
-  const search = document.getElementById('susp-search').value.toLowerCase();
-  const sf = document.getElementById('susp-filter-status').value;
-  let data = dbGet('susp');
-  if (search) data = data.filter(s => s.cnpj.includes(search) || s.razaoSocial.toLowerCase().includes(search));
-  if (sf) data = data.filter(s => s.status === sf);
-  if (!data.length) { toast('Nenhum registro para exportar.', 'error'); return; }
-  data.sort((a,b) => a.dataSusp < b.dataSusp ? -1 : 1);
-
-  const filtroLabel = sf ? ` — ${sf}` : '';
-  const dataHoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
-
-  function badge(txt, cor) {
-    const estilos = {
-      warning: 'background:#fef9c3;color:#92400e;',
-      success: 'background:#dcfce7;color:#15803d;',
-      danger:  'background:#fee2e2;color:#991b1b;',
-      info:    'background:#e0f2fe;color:#0369a1;',
-      purple:  'background:#f3e8ff;color:#7e22ce;',
-      gray:    'background:#f3f4f6;color:#4b5563;',
-    };
-    return `<span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;${estilos[cor]||estilos.gray}">${txt}</span>`;
-  }
-
-  function statusBadge(s) {
-    if (s==='Suspenso')  return badge('⏸️ Suspenso','warning');
-    if (s==='Reativado') return badge('✅ Reativado','success');
-    if (s==='Encerrado') return badge('🔴 Encerrado','gray');
-    return badge(s||'—','gray');
-  }
-  function debitoBadge(d) {
-    if (d==='Quitado')    return badge('✅ Quitado','success');
-    if (d==='Negociando') return badge('🔄 Negociando','info');
-    return badge('⚠️ Pendente','danger');
-  }
-  function divBadge(d) {
-    return d==='Tech' ? badge('Tech','purple') : badge('Contabilidade','info');
-  }
-  const linhas = data.map((s) => {
-    return `<tr>
-      <td style="font-size:11px;color:#6b7280;font-family:monospace;white-space:nowrap;">${s.cnpj}</td>
-      <td style="font-weight:600;">${s.razaoSocial}</td>
-      <td>${divBadge(s.divisao)}</td>
-      <td style="font-size:12px;white-space:nowrap;">${fmtDate(s.dataSusp)||'—'}</td>
-      <td>${debitoBadge(s.debito)}</td>
-      <td>${statusBadge(s.status)}</td>
-      <td style="font-size:12px;white-space:nowrap;">${fmtDate(s.dataReativacao)||'—'}</td>
-    </tr>`;
-  }).join('');
-
-  const tot = data.length;
-  const nSusp = data.filter(s=>s.status==='Suspenso').length;
-  const nReat = data.filter(s=>s.status==='Reativado').length;
-  const nQuit = data.filter(s=>s.debito==='Quitado').length;
-  const nPend = data.filter(s=>s.debito==='Pendente').length;
-
-  const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Clientes Suspensos${filtroLabel} — ${dataHoje}</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; color: #1f2937; font-size: 13px; }
-  .header { background: #1a1f2e; color: #fff; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 16px; font-weight: 700; }
-  .header p { font-size: 11px; color: #9ca3af; margin-top: 3px; }
-  .header-right { font-size: 12px; color: #9ca3af; text-align: right; }
-  .container { padding: 24px 32px; }
-  .stats { display: flex; gap: 14px; margin-bottom: 20px; }
-  .stat { background: #fff; border-radius: 8px; padding: 14px 18px; flex: 1; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  .stat-val { font-size: 26px; font-weight: 800; color: #111827; }
-  .stat-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
-  .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); overflow: hidden; }
-  .card-header { padding: 14px 18px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; }
-  .card-header h2 { font-size: 14px; font-weight: 700; }
-  .card-header span { font-size: 12px; color: #6b7280; }
-  table { width: 100%; border-collapse: collapse; }
-  thead th { padding: 7px 10px; text-align: left; font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-  tbody td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: #f9fafb; }
-  .footer { padding: 16px 32px; font-size: 11px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; margin-top: 24px; }
-  @media print { body{background:#fff;} .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .stat,.card{box-shadow:none;border:1px solid #e5e7eb;} button{display:none;} }
-</style>
-</head>
-<body>
-<div class="header">
-  <div><h1>⏸️ Clientes Suspensos${filtroLabel}</h1><p>Central de Triagem — Lucralize</p></div>
-  <div class="header-right">Gerado em ${dataHoje}</div>
-</div>
-<div class="container">
-  <div class="stats">
-    <div class="stat"><div class="stat-val">${tot}</div><div class="stat-lbl">Total</div></div>
-    <div class="stat"><div class="stat-val">${nSusp}</div><div class="stat-lbl">Suspensos</div></div>
-    <div class="stat"><div class="stat-val">${nReat}</div><div class="stat-lbl">Reativados</div></div>
-    <div class="stat"><div class="stat-val">${nQuit}</div><div class="stat-lbl">Déb. Quitado</div></div>
-    <div class="stat"><div class="stat-val">${nPend}</div><div class="stat-lbl">Déb. Pendente</div></div>
-  </div>
-  <div class="card">
-    <div class="card-header"><h2>Clientes Suspensos${filtroLabel}</h2><span>${tot} registro(s)</span></div>
-    <table>
-      <thead><tr>
-        <th>CNPJ</th><th>Razão Social</th><th>Divisão</th><th>Data Susp.</th><th>Débito</th><th>Status</th><th>Data Reativ.</th>
-      </tr></thead>
-      <tbody>${linhas}</tbody>
-    </table>
-  </div>
-</div>
-<div class="footer">Central de Triagem — Lucralize · Exportado em ${dataHoje}</div>
-</body></html>`;
-  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank');
-  if (win) win.focus();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-}
-
-function exportarSuspensosPDF(){
-  let data=dbGet('susp');
-  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
-  const search=document.getElementById('susp-search').value.toLowerCase();
-  const sf=document.getElementById('susp-filter-status').value;
-  if(search)data=data.filter(s=>s.cnpj.includes(search)||s.razaoSocial.toLowerCase().includes(search));
-  if(sf)data=data.filter(s=>s.status===sf);
-  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
-  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial));
-  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-    const _logoSrc=localStorage.getItem('triagem_logo')||LUCRALIZE_LOGO;
-  const logoHtml=`<img src="${_logoSrc}" style="height:36px;object-fit:contain;margin-right:10px;">`;
-  const tech=data.filter(s=>s.divisao==='Tech');
-  const cont=data.filter(s=>s.divisao==='Contabilidade');
-  const nTechSusp=tech.filter(s=>s.status==='Suspenso').length;
-  const nContSusp=cont.filter(s=>s.status==='Suspenso').length;
-  function stBadge(st){
-    const cfg={Suspenso:'background:#fef3c7;color:#92400e;',Reativado:'background:#d1fae5;color:#065f46;',Encerrado:'background:#f3f4f6;color:#374151;'};
-    return `<span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:8.5px;font-weight:700;${cfg[st]||cfg.Encerrado}">${st}</span>`;
-  }
-  function buildRows(list){
-    return list.map((s,i)=>`<tr style="background:${i%2===0?'#f7fafd':'#ffffff'};">
-      <td style="padding:4px 8px;font-size:10px;color:#1a202c;border-bottom:1px solid #e8f4f7;">${s.razaoSocial}</td>
-      <td style="padding:4px 8px;border-bottom:1px solid #e8f4f7;white-space:nowrap;">${stBadge(s.status)}</td>
-    </tr>`).join('');
-  }
-  function buildSection(label,list,nSusp,color){
-    if(!list.length)return`<div style="flex:1;"></div>`;
-    return`<div style="flex:1;min-width:0;">
-      <div style="background:${color};color:#fff;padding:8px 12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-weight:700;font-size:12px;">${label}</span>
-        <span style="font-size:10px;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:20px;">${nSusp} suspenso${nSusp!==1?'s':''} · ${list.length} total</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;border:1px solid #e8f4f7;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
-        <thead><tr style="background:#f0f9fb;">
-          <th style="padding:5px 8px;font-size:8.5px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">Razão Social</th>
-          <th style="padding:5px 8px;font-size:8.5px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;white-space:nowrap;">Status</th>
-        </tr></thead>
-        <tbody>${buildRows(list)}</tbody>
-      </table>
-    </div>`;
-  }
-  const doc=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-<title>Clientes Suspensos — ${hoje}</title>
-<style>
-  @page{size:A4 landscape;margin:10mm 12mm;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7fafd;color:#1a202c;}
-  @media print{body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-</style></head><body>
-<div style="background:#0d1328;color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:12px;display:flex;align-items:center;">
-  <div style="flex:0 0 auto;">${logoHtml}</div>
-  <div style="flex:1;text-align:center;font-size:15px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">Clientes Suspensos</div>
-  <div style="flex:0 0 auto;text-align:right;font-size:9px;color:#91dbe4;">
-    <div>${hoje}</div>
-    <div style="margin-top:2px;">${data.length} registro${data.length!==1?'s':''}</div>
-  </div>
-</div>
-<div style="display:flex;gap:14px;align-items:flex-start;">
-  ${buildSection('Tech',tech,nTechSusp,'#0c7488')}
-  ${buildSection('Contabilidade',cont,nContSusp,'#0c7387')}
-</div>
-<div style="margin-top:10px;font-size:8px;color:#91dbe4;text-align:center;border-top:1px solid #e8f4f7;padding-top:6px;">Central de Triagem — Lucralize · ${hoje}</div>
-
-</body></html>`;
-  // Use iframe so images load with same referer as main page (fixes hotlink/CORS)
-  const _frame=document.createElement('iframe');
-  _frame.style.cssText='position:fixed;left:-9999px;top:0;width:1400px;height:900px;border:none;';
-  document.body.appendChild(_frame);
-  const _fdoc=_frame.contentDocument||_frame.contentWindow.document;
-  _fdoc.open();_fdoc.write(doc);_fdoc.close();
-  function _waitAndPrint(){
-    const _imgs=_fdoc.images;
-    if(!_imgs||!_imgs.length){_frame.contentWindow.print();setTimeout(()=>_frame.parentNode&&_frame.parentNode.removeChild(_frame),4000);return;}
-    let _n=_imgs.length,_done=0;
-    function _go(){if(++_done>=_n){_frame.contentWindow.focus();_frame.contentWindow.print();setTimeout(()=>_frame.parentNode&&_frame.parentNode.removeChild(_frame),4000);}}
-    for(let _i=0;_i<_n;_i++){if(_imgs[_i].complete)_go();else{_imgs[_i].onload=_imgs[_i].onerror=_go;}}
-  }
-  setTimeout(_waitAndPrint,200);
-}
-
-async function _logoBuffer(){
-  // 1. Custom logo uploaded by user
-  const custom=localStorage.getItem('triagem_logo');
-  if(custom){try{const r=await fetch(custom);if(r.ok)return{buf:await r.arrayBuffer(),ext:'png'};}catch{}}
-  // 2. Real logo via weserv.nl CORS proxy
-  try{
-    const r=await fetch(LUCRALIZE_LOGO);
-    if(r.ok){const buf=await r.arrayBuffer();if(buf.byteLength>500)return{buf,ext:'png'};}
-  }catch{}
-  // 3. Fallback: draw SVG on canvas
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const scale=4;
-      const w=img.naturalWidth||300,h=img.naturalHeight||60;
-      const c=document.createElement('canvas');
-      c.width=w*scale;c.height=h*scale;
-      const ctx=c.getContext('2d');
-      ctx.scale(scale,scale);
-      ctx.drawImage(img,0,0);
-      c.toBlob(blob=>{blob.arrayBuffer().then(buf=>resolve({buf,ext:'png'})).catch(()=>resolve(null));},'image/png');
-    };
-    img.onerror=()=>resolve(null);
-    img.src=LUCRALIZE_LOGO_SVG;
-  });
-}
-async function exportarSuspensosExcel(){
-  const search=document.getElementById('susp-search').value.toLowerCase();
-  const sf=document.getElementById('susp-filter-status').value;
-  let data=dbGet('susp');
-  if(search)data=data.filter(s=>s.cnpj.includes(search)||s.razaoSocial.toLowerCase().includes(search));
-  if(sf)data=data.filter(s=>s.status===sf);
-  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
-  data.sort((a,b)=>a.dataSusp<b.dataSusp?-1:1);
-  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-
-  const workbook=new ExcelJS.Workbook();
-  const ws=workbook.addWorksheet('Clientes Suspensos');
-
-  // Larguras das colunas
-  ws.columns=[
-    {width:20},{width:42},{width:14},{width:16},
-    {width:14},{width:14},{width:16},{width:28}
-  ];
-
-  // Linha 1: cabeçalho navy
-  ws.mergeCells('A1:H1');
-  ws.getRow(1).height=42;
-  const c1=ws.getCell('A1');
-  c1.value='CLIENTES SUSPENSOS';
-  c1.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-  c1.font={bold:true,size:14,color:{argb:'FFFFFFFF'},name:'Calibri'};
-  c1.alignment={horizontal:'center',vertical:'middle'};
-
-  // Linha 2: data e contagem (navy)
-  ws.mergeCells('A2:H2');
-  ws.getRow(2).height=16;
-  const c2=ws.getCell('A2');
-  c2.value=`Central de Triagem — Lucralize  |  ${hoje}  |  ${data.length} registro${data.length!==1?'s':''}`;
-  c2.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-  c2.font={size:9,color:{argb:'FF91DBE4'},name:'Calibri'};
-  c2.alignment={horizontal:'center',vertical:'middle'};
-
-  // Linha 3: espaçador navy
-  ws.mergeCells('A3:H3');
-  ws.getRow(3).height=5;
-  ws.getCell('A3').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-
-  // Linha 4: cabeçalhos teal
-  ws.getRow(4).height=20;
-  ['CNPJ','Razão Social','Divisão','Data Suspensão','Débito','Status','Data Reativação','Observações'].forEach((h,i)=>{
-    const cell=ws.getCell(4,i+1);
-    cell.value=h;
-    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0C7488'}};
-    cell.font={bold:true,size:10,color:{argb:'FFFFFFFF'},name:'Calibri'};
-    cell.alignment={horizontal:'center',vertical:'middle'};
-  });
-
-  // Linhas de dados
-  data.forEach((s,i)=>{
-    const rn=5+i;
-    ws.getRow(rn).height=15;
-    [s.cnpj,s.razaoSocial,s.divisao,fmtDate(s.dataSusp),s.debito,s.status,fmtDate(s.dataReativacao),s.obs||''].forEach((v,ci)=>{
-      const cell=ws.getCell(rn,ci+1);
-      cell.value=v;
-      cell.font={size:10,name:'Calibri'};
-      cell.alignment={vertical:'top',wrapText:ci===1||ci===7};
-    });
-  });
-
-  // Logo
-  try{const logo=await _logoBuffer();if(logo){const imgId=workbook.addImage({buffer:logo.buf,extension:logo.ext});ws.addImage(imgId,{tl:{col:0.12,row:0.08},ext:{width:158,height:34}});}}catch(e){}
-
-  // Gera e baixa o arquivo
-  const buf=await workbook.xlsx.writeBuffer();
-  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`suspensos_${today()}.xlsx`;a.click();
-  URL.revokeObjectURL(url);
-  toast(`${data.length} registro(s) exportado(s) para Excel.`);
-}
-
-async function exportarCertsExcel(){
-  // respect current filters
-  const search=document.getElementById('cert-search').value.toLowerCase();
-  const divF=document.getElementById('cert-filter-div').value;
-  const vencF=document.getElementById('cert-filter-venc')?.value||'';
-  const procVencF=document.getElementById('cert-filter-proc-venc')?.value||'';
-  const certDigF=document.getElementById('cert-filter-cert-dig')?.value||'';
-  const procF=document.getElementById('cert-filter-proc')?.value||'';
-  let data=dbGet('certs');
-  if(search)data=data.filter(c=>c.cnpj.includes(search)||c.razaoSocial.toLowerCase().includes(search));
-  if(divF)data=data.filter(c=>c.divisao===divF);
-  if(vencF==='vencidos')data=data.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d<0;});
-  else if(vencF==='15dias')data=data.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=15;});
-  if(procVencF==='vencidos')data=data.filter(c=>{const d=daysDiff(c.procVenc);return d!==null&&d<0;});
-  else if(procVencF==='15dias')data=data.filter(c=>{const d=daysDiff(c.procVenc);return d!==null&&d>=0&&d<=15;});
-  if(certDigF)data=data.filter(c=>c.temCertificado===certDigF);
-  if(procF)data=data.filter(c=>c.statusProcuracao===procF);
-  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
-  data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
-  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-
-  const workbook=new ExcelJS.Workbook();
-  const ws=workbook.addWorksheet('Certificados e-CAC');
-
-  ws.columns=[
-    {width:22},{width:50},{width:16},{width:14},
-    {width:18},{width:18},{width:16},{width:16},
-    {width:14},{width:12},{width:12},{width:30}
-  ];
-
-  // Linha 1: cabeçalho navy
-  ws.mergeCells('A1:L1');
-  ws.getRow(1).height=42;
-  const c1=ws.getCell('A1');
-  c1.value='CERTIFICADOS / e-CAC';
-  c1.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-  c1.font={bold:true,size:14,color:{argb:'FFFFFFFF'},name:'Calibri'};
-  c1.alignment={horizontal:'center',vertical:'middle'};
-
-  // Linha 2: subtítulo navy
-  ws.mergeCells('A2:L2');
-  ws.getRow(2).height=16;
-  const c2=ws.getCell('A2');
-  c2.value=`Central de Triagem — Lucralize  |  ${hoje}  |  ${data.length} registro${data.length!==1?'s':''}`;
-  c2.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-  c2.font={size:9,color:{argb:'FF91DBE4'},name:'Calibri'};
-  c2.alignment={horizontal:'center',vertical:'middle'};
-
-  // Linha 3: espaçador
-  ws.mergeCells('A3:L3');
-  ws.getRow(3).height=5;
-  ws.getCell('A3').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D1328'}};
-
-  // Linha 4: cabeçalhos teal
-  ws.getRow(4).height=22;
-  const headers=['CNPJ','Razão Social','Divisão','Tipo Cert.','Venc. Certificado','Venc. Procuração','Cert. Digital','Procuração eCac','Req. Código','Alerta 30d','Alerta 15d','Observações'];
-  headers.forEach((h,i)=>{
-    const cell=ws.getCell(4,i+1);
-    cell.value=h;
-    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0C7488'}};
-    cell.font={bold:true,size:10,color:{argb:'FFFFFFFF'},name:'Calibri'};
-    cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};
-  });
-
-  // Linhas de dados — com separadores de divisão
-  let currentDiv=null;
-  let rn=5;
-  data.forEach(c=>{
-    // Linha separadora de divisão
-    if(c.divisao!==currentDiv){
-      currentDiv=c.divisao;
-      ws.mergeCells(`A${rn}:L${rn}`);
-      ws.getRow(rn).height=18;
-      const sc=ws.getCell(`A${rn}`);
-      sc.value=(c.divisao==='Contabilidade'?'📊 ':'💻 ')+c.divisao.toUpperCase();
-      sc.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8F4F7'}};
-      sc.font={bold:true,size:10,color:{argb:'FF0C7488'},name:'Calibri'};
-      sc.alignment={horizontal:'left',vertical:'middle'};
-      rn++;
-    }
-    ws.getRow(rn).height=15;
-    const vals=[
-      c.cnpj,
-      c.razaoSocial,
-      c.divisao,
-      c.tipo||'',
-      c.vencimento?fmtDate(c.vencimento):'',
-      c.procVenc?fmtDate(c.procVenc):'',
-      c.temCertificado||'',
-      c.statusProcuracao||'',
-      c.codigoAcesso||'',
-      c.alerta30==='Sim'?'Sim':'',
-      c.alerta15==='Sim'?'Sim':'',
-      c.obs||''
-    ];
-    vals.forEach((v,ci)=>{
-      const cell=ws.getCell(rn,ci+1);
-      cell.value=v;
-      cell.font={size:10,name:'Calibri'};
-      cell.alignment={vertical:'top',wrapText:ci===1||ci===11};
-      // Colorir vencimentos expirados/próximos
-      if((ci===4||ci===5)&&v){
-        const iso=ci===4?c.vencimento:c.procVenc;
-        const d=daysDiff(iso);
-        if(d!==null&&d<0)cell.font={size:10,name:'Calibri',color:{argb:'FFDC2626'},bold:true};
-        else if(d!==null&&d<=30)cell.font={size:10,name:'Calibri',color:{argb:'FFD97706'},bold:true};
-      }
-    });
-    rn++;
-  });
-
-  // Logo
-  try{const logo=await _logoBuffer();if(logo){const imgId=workbook.addImage({buffer:logo.buf,extension:logo.ext});ws.addImage(imgId,{tl:{col:0.12,row:0.08},ext:{width:158,height:34}});}}catch(e){}
-
-  const buf=await workbook.xlsx.writeBuffer();
-  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`certificados_ecac_${today()}.xlsx`;a.click();
-  URL.revokeObjectURL(url);
-  toast(`${data.length} registro(s) exportado(s) para Excel.`);
+  tbody.innerHTML=data.map(c=>`<tr class="urgente-15"><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-warning">⏸️ Suspenso</span></td></tr>`).join('');
 }
 
 // ==================== CERT EXPORTS ====================
@@ -2370,57 +1600,6 @@ function atualizarLogo(){
 }
 
 // ==================== EXPORTAR IMAGEM ====================
-async function exportarSuspensosImagem(){
-  const search=document.getElementById('susp-search').value.toLowerCase();
-  const sf=document.getElementById('susp-filter-status').value;
-  let data=dbGet('susp');
-  if(search)data=data.filter(s=>s.cnpj.includes(search)||s.razaoSocial.toLowerCase().includes(search));
-  if(sf)data=data.filter(s=>s.status===sf);
-  if(!data.length){toast('Nenhum registro para exportar.','error');return;}
-  data.sort((a,b)=>a.razaoSocial.localeCompare(b.razaoSocial));
-  const tech=data.filter(s=>s.divisao==='Tech');
-  const cont=data.filter(s=>s.divisao==='Contabilidade');
-  const nTechSusp=tech.filter(s=>s.status==='Suspenso').length;
-  const nContSusp=cont.filter(s=>s.status==='Suspenso').length;
-  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-    const _logoSrc2=localStorage.getItem('triagem_logo')||LUCRALIZE_LOGO;
-  const logoHtml=`<img src="${_logoSrc2}" style="height:40px;object-fit:contain;margin-right:10px;" crossorigin="anonymous">`;
-  function stBadge(st){const cfg={Suspenso:'background:#fef3c7;color:#92400e;',Reativado:'background:#d1fae5;color:#065f46;',Encerrado:'background:#f3f4f6;color:#374151;'};return`<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;${cfg[st]||cfg.Encerrado}">${st}</span>`;}
-  function buildRows(list){return list.map((s,i)=>`<tr style="background:${i%2===0?'#f7fafd':'#fff'};"><td style="padding:5px 10px;font-size:12px;border-bottom:1px solid #e8f4f7;">${s.razaoSocial}</td><td style="padding:5px 10px;border-bottom:1px solid #e8f4f7;">${stBadge(s.status)}</td></tr>`).join('');}
-  function buildSection(label,list,nSusp,color){
-    if(!list.length)return'';
-    return`<div style="flex:1;min-width:0;"><div style="background:${color};color:#fff;padding:10px 14px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:13px;">${label}</span><span style="font-size:11px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">${nSusp} suspenso${nSusp!==1?'s':''} · ${list.length} total</span></div><table style="width:100%;border-collapse:collapse;border:1px solid #e8f4f7;border-top:none;"><thead><tr style="background:#f0f9fb;"><th style="padding:6px 10px;font-size:10px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">Razão Social</th><th style="padding:6px 10px;font-size:10px;font-weight:700;color:#0c7488;text-transform:uppercase;letter-spacing:.4px;text-align:left;border-bottom:2px solid #0c7488;">Status</th></tr></thead><tbody>${buildRows(list)}</tbody></table></div>`;
-  }
-  const wrap=document.createElement('div');
-  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:1200px;background:#f7fafd;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
-  wrap.innerHTML=`
-    <div style="background:#0d1328;color:#fff;padding:12px 16px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;">
-      <div style="flex:0 0 auto;">${logoHtml}</div>
-      <div style="flex:1;text-align:center;font-size:17px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">Clientes Suspensos</div>
-      <div style="flex:0 0 auto;text-align:right;font-size:10px;color:#91dbe4;"><div>${hoje}</div><div style="margin-top:2px;">${data.length} registros</div></div>
-    </div>
-    <div style="display:flex;gap:16px;align-items:flex-start;">
-      ${buildSection('Tech',tech,nTechSusp,'#0c7488')}
-      ${buildSection('Contabilidade',cont,nContSusp,'#0c7387')}
-    </div>
-    <div style="margin-top:12px;font-size:10px;color:#94a3b8;text-align:center;padding-top:8px;border-top:1px solid #e8f4f7;">Central de Triagem — Lucralize · ${hoje}</div>`;
-  document.body.appendChild(wrap);
-  toast('Gerando imagem...','info');
-  try{
-    const canvas=await html2canvas(wrap,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f7fafd'});
-    document.body.removeChild(wrap);
-    const a=document.createElement('a');
-    a.href=canvas.toDataURL('image/png');
-    a.download=`suspensos_${today()}.png`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    toast('Imagem exportada!');
-  } catch(e){
-    document.body.removeChild(wrap);
-    toast('Erro ao gerar imagem.','error');
-    console.error(e);
-  }
-}
-
 
 // ==================== IMPORT CLIENTES ====================
 (function(){
@@ -2438,7 +1617,6 @@ async function exportarSuspensosImagem(){
 })();
 
 // ==================== INIT ====================
-document.getElementById('sidebar-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
 renderPainel();
 atualizarLogo();
 initAutoSave();
