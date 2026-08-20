@@ -312,7 +312,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
       <span class="icon">🚪</span> Saída de Clientes
     </div>
     <div class="nav-item" onclick="goTo('suspensos')" id="nav-suspensos">
-      <span class="icon">⏸️</span> Clientes Suspensos
+      <span class="icon">⏸️</span> Suspenso/Em Cancelamento
       <span class="nav-badge" id="badge-susp" style="display:none"></span>
     </div>
   </nav>
@@ -528,6 +528,11 @@ tr.row-success:hover { background: #dcfce7 !important; }
             <option>Contabilidade</option>
             <option>Tech</option>
           </select>
+          <select class="form-control" style="width:180px;" id="susp-filter-situacao" onchange="renderSuspTable()">
+            <option value="">Todas as situações</option>
+            <option value="SUSPENSO">Suspenso</option>
+            <option value="EM CANCELAMENTO">Em Cancelamento</option>
+          </select>
         </div>
       </div>
       <div class="alert alert-info" style="margin-bottom:14px;font-size:12px;">🔄 Lista em tempo real, lida diretamente do SharePoint (Controle de Clientes / Base de Usuários) — somente leitura.</div>
@@ -548,7 +553,7 @@ tr.row-success:hover { background: #dcfce7 !important; }
           </div>
           <div class="empty-state" id="susp-empty" style="display:none;">
             <div class="icon">⏸️</div>
-            <p>Nenhum cliente suspenso.</p>
+            <p>Nenhum cliente suspenso ou em cancelamento.</p>
           </div>
         </div>
       </div>
@@ -1187,7 +1192,7 @@ function dbSave(k,item){
 function dbDelete(k,id){dbSet(k,dbGet(k).filter(i=>i.id!==id));}
 
 // ==================== NAVIGATION ====================
-const pages={painel:'Painel Geral',documentos:'Recebimento de Documentos',certificados:'Certificados / eCac',saida:'Saída de Clientes',suspensos:'Clientes Suspensos'};
+const pages={painel:'Painel Geral',documentos:'Recebimento de Documentos',certificados:'Certificados / eCac',saida:'Saída de Clientes',suspensos:'Suspenso/Em Cancelamento'};
 const subtitles={painel:'Visão consolidada de todas as pendências',documentos:'Checklist de recebimento por cliente',certificados:'Controle de vencimentos e alertas',saida:'Clientes que encerraram contrato',suspensos:'Contratos suspensos e acompanhamento'};
 let currentPage='painel', currentEditId=null, alertaCertId=null, alertaTipo=null;
 
@@ -1219,7 +1224,7 @@ function updateBadges(){
   const docs=dbGet('docs'),certs=dbGet('certs');
   setBadge('badge-docs',docs.filter(d=>countPending(d)>0).length);
   setBadge('badge-certs',certs.filter(c=>{const d=daysDiff(c.vencimento);return d!==null&&d>=0&&d<=30;}).length);
-  setBadge('badge-susp',_clientStatusCache.filter(c=>c.situacao==='SUSPENSO').length);
+  setBadge('badge-susp',_clientStatusCache.filter(c=>c.situacao==='SUSPENSO'||c.situacao==='EM CANCELAMENTO').length);
 }
 function setBadge(id,n){const el=document.getElementById(id);if(!el)return;if(n>0){el.textContent=n;el.style.display='';}else el.style.display='none';}
 
@@ -1462,17 +1467,18 @@ function renderSaidaTable(){
   tbody.innerHTML=data.map(c=>`<tr><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-gray">${c.situacao==='BAIXADA'?'Baixada':'Inativo'}</span></td></tr>`).join('');
 }
 
-// ==================== MÓDULO 5: SUSPENSOS (somente leitura, via SharePoint) ====================
+// ==================== MÓDULO 5: SUSPENSO/EM CANCELAMENTO (somente leitura, via SharePoint) ====================
 function renderSuspTable(){
-  const search=document.getElementById('susp-search').value.toLowerCase(),divF=document.getElementById('susp-filter-div').value;
-  let data=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO');
+  const search=document.getElementById('susp-search').value.toLowerCase(),divF=document.getElementById('susp-filter-div').value,sitF=document.getElementById('susp-filter-situacao')?.value||'';
+  let data=_clientStatusCache.filter(c=>c.situacao==='SUSPENSO'||c.situacao==='EM CANCELAMENTO');
   if(search)data=data.filter(c=>c.cnpj.toLowerCase().includes(search)||c.razaoSocial.toLowerCase().includes(search));
   if(divF)data=data.filter(c=>c.divisao===divF);
+  if(sitF)data=data.filter(c=>c.situacao===sitF);
   data.sort((a,b)=>{if(a.divisao!==b.divisao)return a.divisao==='Contabilidade'?-1:1;return a.razaoSocial.localeCompare(b.razaoSocial,'pt-BR');});
   const tbody=document.getElementById('susp-table-body'),empty=document.getElementById('susp-empty');
   if(!data.length){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  tbody.innerHTML=data.map(c=>`<tr class="urgente-15"><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-warning">⏸️ Suspenso</span></td></tr>`).join('');
+  tbody.innerHTML=data.map(c=>`<tr class="urgente-15"><td><code style="font-size:12px;">${c.cnpj}</code></td><td><strong>${c.razaoSocial}</strong></td><td><span class="badge ${c.divisao==='Contabilidade'?'badge-info':'badge-purple'}">${c.divisao}</span></td><td><span class="badge badge-warning">${c.situacao==='EM CANCELAMENTO'?'🚫 Em Cancelamento':'⏸️ Suspenso'}</span></td></tr>`).join('');
 }
 
 // ==================== CERT EXPORTS ====================
